@@ -1,4 +1,8 @@
 import 'package:day_planner/common/services/theme_box.dart';
+import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
+import 'package:day_planner/features/auth/repositories/auth_repository.dart';
+import 'package:day_planner/features/health/bloc/health_bloc.dart';
+import 'package:day_planner/features/health/services/health.dart';
 import 'package:day_planner/features/posts/posts.dart';
 import 'package:day_planner/features/posts/services/posts_api_service.dart';
 import 'package:day_planner/features/theme/bloc/theme_bloc.dart';
@@ -32,6 +36,8 @@ class GlobalBlocProvider extends StatelessWidget {
         BlocProvider(
           create: (context) => ThemeBloc(Hive.box(ThemeBox.name))..add(const InitTheme()),
         ),
+        BlocProvider(create: (context) => AuthBloc(context.read<AuthRepository>())),
+        BlocProvider(create: (context) => HealthBloc(HealthService())),
         // BlocProvider(
         //   create: (context) => WebSocketCubit(webSocketService: InjectorModule.locator()),
         // ),
