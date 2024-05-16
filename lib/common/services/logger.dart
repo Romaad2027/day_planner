@@ -4,6 +4,7 @@ final log = Logger('EW');
 
 class LoggerBootstrapper {
   Future<void> setupLogger() async {
+    Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen((record) {
       // It's used for printing in dev environment
       // ignore: avoid_print

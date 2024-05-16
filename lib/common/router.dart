@@ -1,6 +1,7 @@
 import 'package:day_planner/common/screens/open_source_licenses_screen.dart';
 import 'package:day_planner/common/screens/splash_screen.dart';
 import 'package:day_planner/features/auth/screens/auth_screen.dart';
+import 'package:day_planner/features/auth/screens/phone_verification_screen.dart';
 import 'package:day_planner/features/posts/posts.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +20,9 @@ import 'widgets/widgets.dart';
 *
 * * * * * * * * * * * */
 const String homeRoute = '/';
+const String authRoute = '/';
+const String mainRoute = '/main';
+const String phoneVerificationRoute = '/phone-verification';
 const String splashRoute = '/splash';
 const String pagesRoute = '/pages';
 const String postsRoute = '/posts';
@@ -28,14 +32,28 @@ const String openSourceLicensesPageRoute = '/open-source-licenses';
 const String appUpdateRequiredRoute = '/app-update-required-route';
 
 final goRouter = GoRouter(
-  initialLocation: homeRoute,
+  initialLocation: splashRoute,
   errorBuilder: (context, state) => ErrorScreen(state.error),
   routes: [
     GoRoute(
-      path: homeRoute,
+      path: authRoute,
       pageBuilder: (context, state) => _TransitionPage(
         key: state.pageKey,
         child: const AuthScreen(),
+      ),
+    ),
+    GoRoute(
+      path: phoneVerificationRoute,
+      pageBuilder: (context, state) => _TransitionPage(
+        key: state.pageKey,
+        child: const PhoneVerificationScreen(),
+      ),
+    ),
+    GoRoute(
+      path: mainRoute,
+      pageBuilder: (context, state) => _TransitionPage(
+        key: state.pageKey,
+        child: const HomeScreen(),
       ),
     ),
     GoRoute(
