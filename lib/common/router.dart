@@ -1,8 +1,9 @@
-import 'package:day_planner/common/screens/open_source_licenses_screen.dart';
 import 'package:day_planner/common/screens/splash_screen.dart';
 import 'package:day_planner/features/auth/screens/auth_screen.dart';
 import 'package:day_planner/features/auth/screens/phone_verification_screen.dart';
+import 'package:day_planner/features/main_page/screens/main_screen.dart';
 import 'package:day_planner/features/posts/posts.dart';
+import 'package:day_planner/features/profile/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -20,10 +21,11 @@ import 'widgets/widgets.dart';
 *
 * * * * * * * * * * * */
 const String homeRoute = '/';
-const String authRoute = '/';
-const String mainRoute = '/main';
-const String phoneVerificationRoute = '/phone-verification';
 const String splashRoute = '/splash';
+const String authRoute = '/auth';
+const String phoneVerificationRoute = '/phone-verification';
+const String mainRoute = '/main';
+const String profileRoute = '/profile';
 const String pagesRoute = '/pages';
 const String postsRoute = '/posts';
 const String pagesDynamicRoute = ':id';
@@ -50,10 +52,17 @@ final goRouter = GoRouter(
       ),
     ),
     GoRoute(
-      path: mainRoute,
+      path: homeRoute,
       pageBuilder: (context, state) => _TransitionPage(
         key: state.pageKey,
         child: const HomeScreen(),
+      ),
+    ),
+    GoRoute(
+      path: mainRoute,
+      pageBuilder: (context, state) => _TransitionPage(
+        key: state.pageKey,
+        child: const MainScreen(),
       ),
     ),
     GoRoute(
@@ -61,6 +70,13 @@ final goRouter = GoRouter(
       pageBuilder: (context, state) => _TransitionPage(
         key: state.pageKey,
         child: const SplashScreen(),
+      ),
+    ),
+    GoRoute(
+      path: profileRoute,
+      pageBuilder: (context, state) => _TransitionPage(
+        key: state.pageKey,
+        child: const ProfileScreen(),
       ),
     ),
     GoRoute(
@@ -100,13 +116,6 @@ final goRouter = GoRouter(
           ),
         ),
       ],
-    ),
-    GoRoute(
-      path: openSourceLicensesPageRoute,
-      pageBuilder: (context, state) => _TransitionPage(
-        key: state.pageKey,
-        child: const OpenSourceLicensesScreen(),
-      ),
     ),
   ],
 );

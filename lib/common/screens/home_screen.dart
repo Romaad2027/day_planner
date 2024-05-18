@@ -1,7 +1,11 @@
 import 'package:day_planner/common/router.dart';
+import 'package:day_planner/common/widgets/bottom_nav_bar.dart';
 import 'package:day_planner/common/widgets/flushbar.dart';
 import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:day_planner/features/health/bloc/health_bloc.dart';
+import 'package:day_planner/features/main_page/screens/main_screen.dart';
+import 'package:day_planner/features/profile/screens/profile_screen.dart';
+import 'package:day_planner/features/tab_switcher/cubit/tab_switch_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -32,21 +36,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ],
       child: Scaffold(
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Center(
-              child: Column(
-                children: [
-                  FilledButton(
-                    onPressed: () => context.read<AuthBloc>().add(const LogOut()),
-                    child: const Text('Log out'),
-                  )
-                ],
-              ),
-            ),
-          ],
+        body: BlocBuilder<TabsSwitchCubit, TabsSwitchState>(
+          builder: (context, state) {
+            switch (state.tab) {
+              case TabScreen.main:
+                return const MainScreen();
+              case TabScreen.profile:
+                return const ProfileScreen();
+            }
+          },
         ),
+        bottomNavigationBar: CommonBottomNavBar(),
       ),
     );
   }

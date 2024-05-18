@@ -20,7 +20,7 @@ class HealthService {
   Future<bool> requestPermission() async {
     try {
       final requested = await _health.hasPermissions(types);
-      return requested ?? false;
+      return requested ?? true;
     } catch (e) {
       rethrow;
     }

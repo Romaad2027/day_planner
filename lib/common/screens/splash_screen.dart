@@ -17,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
       if (FirebaseAuth.instance.currentUser != null) {
-        context.go(mainRoute);
+        context.go(homeRoute);
       } else {
         context.go(authRoute);
       }

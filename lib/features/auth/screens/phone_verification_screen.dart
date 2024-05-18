@@ -98,7 +98,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
 
   void _loginListener(BuildContext context, AuthState state) {
     if (state.loginStatus.isSuccess) {
-      context.go(mainRoute);
+      context.go(homeRoute);
     }
   }
 }
