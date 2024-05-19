@@ -1,5 +1,8 @@
 import 'package:day_planner/common/router.dart';
 import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
+import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
+import 'package:day_planner/features/profile/bloc/profile_event.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -98,6 +101,10 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
 
   void _loginListener(BuildContext context, AuthState state) {
     if (state.loginStatus.isSuccess) {
+      if (state.isNewUser) {
+        final user = FirebaseAuth.instance.currentUser;
+        context.read<ProfileBloc>().add(AddUser(user!));
+      }
       context.go(homeRoute);
     }
   }

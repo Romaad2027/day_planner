@@ -4,6 +4,8 @@ import 'package:day_planner/common/widgets/flushbar.dart';
 import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:day_planner/features/health/bloc/health_bloc.dart';
 import 'package:day_planner/features/main_page/screens/main_screen.dart';
+import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
+import 'package:day_planner/features/profile/bloc/profile_event.dart';
 import 'package:day_planner/features/profile/screens/profile_screen.dart';
 import 'package:day_planner/features/tab_switcher/cubit/tab_switch_cubit.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     context.read<HealthBloc>().add(const InitHealth());
+    context.read<ProfileBloc>().add(const ListenToUser());
     super.initState();
   }
 

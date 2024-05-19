@@ -33,11 +33,14 @@ class AuthState extends Equatable {
   final LoginStatus loginStatus;
   final AuthStatus authStatus;
 
+  final bool isNewUser;
+
   const AuthState({
     this.phoneNumber = '',
     this.verificationId = '',
     this.loginStatus = LoginStatus.initial,
     this.authStatus = AuthStatus.loggedOut,
+    this.isNewUser = false,
   });
 
   AuthState copyWith({
@@ -45,12 +48,14 @@ class AuthState extends Equatable {
     String? verificationId,
     LoginStatus? loginStatus,
     AuthStatus? authStatus,
+    bool? isNewUser,
   }) {
     return AuthState(
       phoneNumber: phoneNumber ?? this.phoneNumber,
       verificationId: verificationId ?? this.verificationId,
       loginStatus: loginStatus ?? this.loginStatus,
       authStatus: authStatus ?? this.authStatus,
+      isNewUser: isNewUser ?? this.isNewUser,
     );
   }
 
@@ -60,5 +65,6 @@ class AuthState extends Equatable {
         verificationId,
         loginStatus,
         authStatus,
+        isNewUser,
       ];
 }

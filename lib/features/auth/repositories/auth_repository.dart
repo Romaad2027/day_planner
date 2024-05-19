@@ -8,7 +8,7 @@ abstract class AuthRepository {
     required void Function(FirebaseAuthException) verificationFailed,
   });
 
-  Future<void> signInWithSmsCode({required String verificationId, required String smsCode});
+  Future<bool> signInWithSmsCode({required String verificationId, required String smsCode});
 
   Future<void> logOut();
 }
@@ -32,9 +32,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithSmsCode({required String verificationId, required String smsCode}) async {
+  Future<bool> signInWithSmsCode({required String verificationId, required String smsCode}) async {
     try {
-      await authService.signInWithSmsCode(verificationId: verificationId, smsCode: smsCode);
+      return await authService.signInWithSmsCode(verificationId: verificationId, smsCode: smsCode);
     } catch (e) {
       rethrow;
     }

@@ -57,8 +57,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onSignInWithSmsCode(SignInWithSmsCode event, Emitter emit) async {
     try {
       emit(state.copyWith(loginStatus: LoginStatus.loading));
-      await _authRepository.signInWithSmsCode(verificationId: state.verificationId, smsCode: event.smsCode);
-      emit(state.copyWith(loginStatus: LoginStatus.success));
+      final isNewUser =
+          await _authRepository.signInWithSmsCode(verificationId: state.verificationId, smsCode: event.smsCode);
+      emit(state.copyWith(loginStatus: LoginStatus.success, isNewUser: isNewUser));
     } catch (e) {
       emit(state.copyWith(loginStatus: LoginStatus.error));
     }

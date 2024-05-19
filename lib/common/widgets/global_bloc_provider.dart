@@ -5,6 +5,8 @@ import 'package:day_planner/features/health/bloc/health_bloc.dart';
 import 'package:day_planner/features/health/services/health.dart';
 import 'package:day_planner/features/posts/posts.dart';
 import 'package:day_planner/features/posts/services/posts_api_service.dart';
+import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
+import 'package:day_planner/features/profile/repositories/profile_repository.dart';
 import 'package:day_planner/features/tab_switcher/cubit/tab_switch_cubit.dart';
 import 'package:day_planner/features/theme/bloc/theme_bloc.dart';
 import 'package:dio/dio.dart';
@@ -38,6 +40,7 @@ class GlobalBlocProvider extends StatelessWidget {
           create: (context) => ThemeBloc(Hive.box(ThemeBox.name))..add(const InitTheme()),
         ),
         BlocProvider(create: (context) => AuthBloc(context.read<AuthRepository>())),
+        BlocProvider(create: (context) => ProfileBloc(context.read<ProfileRepository>())),
         BlocProvider(create: (context) => TabsSwitchCubit()),
         BlocProvider(create: (context) => HealthBloc(HealthService())),
         // BlocProvider(
