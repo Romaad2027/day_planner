@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:day_planner/features/auth/repositories/auth_repository.dart';
 import 'package:day_planner/features/auth/services/auth_service.dart';
+import 'package:day_planner/features/day_planner/repositories/events_repository.dart';
 import 'package:day_planner/features/posts/services/services.dart';
 import 'package:day_planner/features/profile/repositories/profile_repository.dart';
 import 'package:day_planner/network/api_client.dart';
@@ -33,6 +34,9 @@ class RepositoriesHolder extends StatelessWidget {
         ),
         RepositoryProvider<ProfileRepository>(
           create: (context) => ProfileRepositoryImpl(FirebaseFirestore.instance),
+        ),
+        RepositoryProvider<EventsRepository>(
+          create: (context) => EventsRepositoryImpl(FirebaseFirestore.instance),
         ),
       ],
       child: child,

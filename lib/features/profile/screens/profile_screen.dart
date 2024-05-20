@@ -1,10 +1,10 @@
 import 'package:day_planner/common/widgets/flushbar.dart';
+import 'package:day_planner/common/widgets/text_field.dart';
 import 'package:day_planner/common/widgets/text_scales.dart';
 import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
 import 'package:day_planner/features/profile/bloc/profile_event.dart';
 import 'package:day_planner/features/profile/bloc/profile_state.dart';
-import 'package:day_planner/features/profile/widgets/text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -52,13 +52,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 32),
-                ProfileTextField(
+                CommonTextField(
                   controller: _nameController,
                   hintText: 'Name',
                   isEditMode: _isEditMode,
                 ),
                 const SizedBox(height: 16),
-                ProfileTextField(
+                CommonTextField(
                   initialValue: userProfile.phoneNumber,
                   hintText: 'Phone Number',
                   isEditMode: false,

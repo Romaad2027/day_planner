@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
-class ProfileTextField extends StatelessWidget {
+class CommonTextField extends StatelessWidget {
   final bool isEditMode;
   final String? initialValue;
   final String? hintText;
   final TextEditingController? controller;
+  final String? Function(String?)? validator;
 
-  const ProfileTextField({
+  const CommonTextField({
     this.initialValue,
-    this.isEditMode = false,
+    this.isEditMode = true,
     this.hintText,
     this.controller,
+    this.validator,
     super.key,
   });
 
@@ -19,8 +21,9 @@ class ProfileTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       initialValue: initialValue,
-      decoration: InputDecoration(hintText: hintText, border: OutlineInputBorder()),
+      decoration: InputDecoration(hintText: hintText, border: const OutlineInputBorder()),
       enabled: isEditMode,
+      validator: validator,
     );
   }
 }
