@@ -2,6 +2,9 @@ import 'package:day_planner/common/router.dart';
 import 'package:day_planner/common/widgets/bottom_nav_bar.dart';
 import 'package:day_planner/common/widgets/flushbar.dart';
 import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
+import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
+import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
+import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
 import 'package:day_planner/features/health/bloc/health_bloc.dart';
 import 'package:day_planner/features/main_page/screens/main_screen.dart';
 import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
@@ -24,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     context.read<HealthBloc>().add(const InitHealth());
     context.read<ProfileBloc>().add(const ListenToUser());
+    context.read<DayPlannerBloc>().add(ListenToDay(DateTime.now()));
+    context.read<DayPlannerBloc>().add(const ListenToCurrentDay());
     super.initState();
   }
 
@@ -36,6 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         BlocListener<HealthBloc, HealthState>(
           listener: _healthListener,
+        ),
+        BlocListener<DayPlannerBloc, DayPlannerState>(
+          listenWhen: (prev, curr) => prev.currentDayStatus != curr.currentDayStatus,
+          listener: _dayPlannerListener,
         ),
       ],
       child: Scaffold(
@@ -70,6 +79,12 @@ class _HomeScreenState extends State<HomeScreen> {
         status: FlushbarStatus.error,
         message: 'Your Health data permission was denied. Go to settings to allow it.',
       );
+    }
+  }
+
+  void _dayPlannerListener(BuildContext context, DayPlannerState state) {
+    if (state.currentDayStatus.isSuccess && state.currentDayEvents.isNotEmpty) {
+      context.read<DayPlannerBloc>().add(const FetchHealthData());
     }
   }
 }

@@ -3,6 +3,8 @@ import 'package:day_planner/features/health/models/health_model.dart';
 import 'package:equatable/equatable.dart';
 
 class DayEvent extends Equatable {
+  final String docId;
+
   final String name;
   final String category;
   final DateTime from;
@@ -11,6 +13,7 @@ class DayEvent extends Equatable {
   final HealthModel? healthModel;
 
   const DayEvent({
+    required this.docId,
     required this.name,
     required this.category,
     required this.from,
@@ -26,8 +29,10 @@ class DayEvent extends Equatable {
         'health_model': healthModel?.toJson(),
       };
 
-  factory DayEvent.fromJson(Map<String, dynamic> json) {
+  factory DayEvent.fromJson(Map<String, dynamic> json, String id) {
+    final healthModel = json['health_model'];
     return DayEvent(
+      docId: id,
       name: json['name'],
       category: json['category'],
       from: (json['from'] as Timestamp).toDate(),

@@ -1,3 +1,6 @@
+import 'package:day_planner/features/health/models/heart_rate.dart';
+import 'package:day_planner/features/health/models/steps.dart';
+
 import '../assets.dart';
 import '../services/credentials_loader.dart';
 import '../services/logger.dart';
@@ -50,4 +53,34 @@ Iterable<E> indexedMap<E, T>(
     yield f(index, item);
     index = index + 1;
   }
+}
+
+bool checkIfDateInRange({required DateTime check, required DateTime begin, required DateTime end}) {
+  return (check.isAfter(begin)) && (check.isBefore(end) || check.isAtSameMomentAs(end));
+}
+
+DateTime extractTimeFromDate(DateTime dateTime) {
+  return DateTime(dateTime.year, dateTime.month, dateTime.day);
+}
+
+int? calculateTotalSteps(List<Steps> steps) {
+  if (steps.isEmpty) {
+    return null;
+  }
+  int totalSteps = 0;
+  for (var s in steps) {
+    totalSteps += s.steps;
+  }
+  return totalSteps;
+}
+
+int? calculateAverageHeartRate(List<HeartRate> heartRates) {
+  if (heartRates.isEmpty) {
+    return null;
+  }
+  int totalHeartRate = 0;
+  for (var h in heartRates) {
+    totalHeartRate += h.heartRate;
+  }
+  return totalHeartRate ~/ heartRates.length;
 }

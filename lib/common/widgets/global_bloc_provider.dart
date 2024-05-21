@@ -44,8 +44,9 @@ class GlobalBlocProvider extends StatelessWidget {
         BlocProvider(create: (context) => AuthBloc(context.read<AuthRepository>())),
         BlocProvider(create: (context) => TabsSwitchCubit()),
         BlocProvider(create: (context) => ProfileBloc(context.read<ProfileRepository>())),
-        BlocProvider(create: (context) => DayPlannerBloc(context.read<EventsRepository>())),
-        BlocProvider(create: (context) => HealthBloc(HealthService())),
+        BlocProvider(
+            create: (context) => DayPlannerBloc(context.read<EventsRepository>(), context.read<HealthService>())),
+        BlocProvider(create: (context) => HealthBloc(context.read<HealthService>())),
         // BlocProvider(
         //   create: (context) => WebSocketCubit(webSocketService: InjectorModule.locator()),
         // ),

@@ -25,4 +25,11 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
       emit(state.copyWith(healthInitStatus: HealthInitStatus.error));
     }
   }
+
+  // Future<void> _onFetchHealthData(FetchHealthData event, Emitter<HealthState> emit) async {
+  //   try {
+  //     final healthData = await _healthService.fetchHealthData(event.from, event.to);
+  //     emit(state.copyWith());
+  //   } catch (e) {}
+  // }
 }

@@ -26,3 +26,18 @@ class ListenToDay extends DayPlannerEvent {
   final DateTime day;
   const ListenToDay(this.day);
 }
+
+class ListenToCurrentDay extends DayPlannerEvent {
+  const ListenToCurrentDay();
+}
+
+class DeleteEvent extends DayPlannerEvent {
+  final String docId;
+  final DateTime day;
+
+  const DeleteEvent(this.docId, this.day);
+}
+
+class FetchHealthData extends DayPlannerEvent {
+  const FetchHealthData();
+}

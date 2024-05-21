@@ -16,34 +16,56 @@ enum DayPlannerStatus {
   bool get isError => this == DayPlannerStatus.error;
 }
 
+enum CurrentDayStatus {
+  initial,
+  success,
+  error;
+
+  bool get isInitial => this == CurrentDayStatus.initial;
+
+  bool get isSuccess => this == CurrentDayStatus.success;
+
+  bool get isError => this == CurrentDayStatus.error;
+}
+
 class DayPlannerState extends Equatable {
   final DayPlannerStatus dayPlannerStatus;
+  final CurrentDayStatus currentDayStatus;
   final DateTime? day;
 
   final List<DayEvent> dayEvents;
+  final List<DayEvent> currentDayEvents;
 
   const DayPlannerState({
     this.dayPlannerStatus = DayPlannerStatus.initial,
+    this.currentDayStatus = CurrentDayStatus.initial,
     this.dayEvents = const <DayEvent>[],
+    this.currentDayEvents = const <DayEvent>[],
     this.day,
   });
 
   DayPlannerState copyWith({
     DayPlannerStatus? dayPlannerStatus,
+    CurrentDayStatus? currentDayStatus,
     List<DayEvent>? dayEvents,
+    List<DayEvent>? currentDayEvents,
     DateTime? day,
   }) =>
       DayPlannerState(
         dayPlannerStatus: dayPlannerStatus ?? this.dayPlannerStatus,
+        currentDayStatus: currentDayStatus ?? this.currentDayStatus,
         dayEvents: dayEvents ?? this.dayEvents,
         day: day ?? this.day,
+        currentDayEvents: currentDayEvents ?? this.currentDayEvents,
       );
 
   @override
   List<Object?> get props => [
         dayPlannerStatus,
+        currentDayStatus,
         dayEvents,
         day,
         dayEvents,
+        currentDayEvents,
       ];
 }

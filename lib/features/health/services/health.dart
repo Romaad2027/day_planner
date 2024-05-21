@@ -1,5 +1,13 @@
 import 'package:health/health.dart';
 
+enum HealthDataAggregateMethod {
+  sum,
+  average;
+
+  bool get isSum => this == HealthDataAggregateMethod.sum;
+  bool get isAverage => this == HealthDataAggregateMethod.average;
+}
+
 class HealthService {
   final Health _health = Health();
 
@@ -7,6 +15,11 @@ class HealthService {
     HealthDataType.STEPS,
     HealthDataType.HEART_RATE,
   ];
+
+  static const Map<HealthDataType, HealthDataAggregateMethod> methods = {
+    HealthDataType.STEPS: HealthDataAggregateMethod.sum,
+    HealthDataType.HEART_RATE: HealthDataAggregateMethod.average,
+  };
 
   Future<void> init() async {
     try {
@@ -24,5 +37,10 @@ class HealthService {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<List<HealthDataPoint>> fetchHealthData(DateTime from, DateTime to) async {
+    List<HealthDataPoint> healthData = await _health.getHealthDataFromTypes(types: types, startTime: from, endTime: to);
+    return healthData;
   }
 }

@@ -14,6 +14,8 @@ class CommonBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<TabsSwitchCubit, TabsSwitchState>(
       builder: (context, state) => BottomNavigationBar(
+        elevation: 70.0,
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

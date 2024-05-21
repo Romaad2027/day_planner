@@ -25,12 +25,14 @@ class MainScreen extends StatelessWidget {
               const Flexible(
                 child: DailyList(),
               ),
+              const Spacer(),
               FilledButton(
                 onPressed: () {
                   context.push(addEventRoute);
                 },
                 child: const Text('Add event'),
               ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
