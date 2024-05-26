@@ -1,8 +1,9 @@
 import 'package:day_planner/common/utils/app_utils.dart';
 import 'package:day_planner/features/health/models/heart_rate.dart';
 import 'package:day_planner/features/health/models/steps.dart';
+import 'package:equatable/equatable.dart';
 
-class HealthModel {
+class HealthModel extends Equatable {
   final List<Steps>? steps;
   final List<HeartRate>? heartRate;
   final int? bloodPressure;
@@ -10,7 +11,7 @@ class HealthModel {
   final int? totalSteps;
   final int? averageHeartRate;
 
-  HealthModel({
+  const HealthModel({
     this.averageHeartRate,
     this.totalSteps,
     this.steps,
@@ -46,4 +47,13 @@ class HealthModel {
         'average_heart_rate': averageHeartRate,
         'blood_pressure': bloodPressure,
       };
+
+  @override
+  List<Object?> get props => [
+        steps,
+        heartRate,
+        bloodPressure,
+        totalSteps,
+        averageHeartRate,
+      ];
 }

@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<ProfileBloc>().add(const ListenToUser());
     context.read<DayPlannerBloc>().add(ListenToDay(DateTime.now()));
     context.read<DayPlannerBloc>().add(const ListenToCurrentDay());
+    context.read<DayPlannerBloc>().add(const StartTimer());
     super.initState();
   }
 

@@ -47,5 +47,6 @@ class DayEvent extends Equatable {
         category,
         from,
         to,
+        healthModel,
       ];
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:day_planner/common/utils/utils.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
@@ -18,6 +19,8 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
   final EventsRepository _eventsRepository;
   final HealthService _healthService;
 
+  late Timer _timer;
+
   DayPlannerBloc(this._eventsRepository, this._healthService) : super(const DayPlannerState()) {
     on<AddNewEvent>(_onAddNewEvent);
     on<SetDay>(_onSetDay);
@@ -25,6 +28,7 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
     on<ListenToCurrentDay>(_onListenToCurrentDay);
     on<DeleteEvent>(_onDeleteEvent);
     on<FetchHealthData>(_onFetchHealthData);
+    on<StartTimer>(_onStartTimer);
   }
 
   Future<void> _onAddNewEvent(AddNewEvent event, Emitter<DayPlannerState> emit) async {
@@ -108,7 +112,7 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
   // }
 
   Future<void> _onFetchHealthData(FetchHealthData event, Emitter<DayPlannerState> emit) async {
-    final currentDayEvents = state.currentDayEvents;
+    final currentDayEvents = _getEventsForHealthUpdate(event.onlyCurrentEvent);
     for (final currEvent in currentDayEvents) {
       final healthData = await _healthService.fetchHealthData(currEvent.from, currEvent.to);
       if (healthData.isEmpty) {
@@ -122,6 +126,33 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
         healthModel: healthModel,
       );
     }
+  }
+
+  void _onStartTimer(StartTimer event, Emitter<DayPlannerState> emit) {
+    _timer = Timer.periodic(const Duration(minutes: 2), (timer) {
+      add(const FetchHealthData(onlyCurrentEvent: true));
+    });
+  }
+
+  List<DayEvent> _getEventsForHealthUpdate(bool onlyCurrentEvent) {
+    if (!onlyCurrentEvent) {
+      return state.currentDayEvents;
+    }
+    final currEvent = _getCurrentEvent();
+    if (currEvent == null) {
+      return [];
+    }
+    return [currEvent];
+  }
+
+  DayEvent? _getCurrentEvent() {
+    return state.currentDayEvents.firstWhereOrNull(
+      (d) => checkIfDateInRange(
+        check: DateTime.now(),
+        begin: d.from,
+        end: d.to,
+      ),
+    );
   }
 
   HealthModel _sortHealthData(List<HealthDataPoint> healthData) {

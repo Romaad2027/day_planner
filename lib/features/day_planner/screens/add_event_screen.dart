@@ -1,3 +1,4 @@
+import 'package:day_planner/common/widgets/common_app_bar.dart';
 import 'package:day_planner/common/widgets/flushbar.dart';
 import 'package:day_planner/common/widgets/loading_button.dart';
 import 'package:day_planner/common/widgets/text_field.dart';
@@ -38,8 +39,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      appBar: CommonAppBar(
         title: Text(
           'Add Event',
           style: context.textStyle(TextScale.titleLarge),

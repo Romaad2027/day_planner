@@ -39,5 +39,10 @@ class DeleteEvent extends DayPlannerEvent {
 }
 
 class FetchHealthData extends DayPlannerEvent {
-  const FetchHealthData();
+  final bool onlyCurrentEvent;
+  const FetchHealthData({this.onlyCurrentEvent = false});
+}
+
+class StartTimer extends DayPlannerEvent {
+  const StartTimer();
 }

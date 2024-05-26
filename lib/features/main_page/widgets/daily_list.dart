@@ -1,9 +1,11 @@
+import 'package:day_planner/common/router.dart';
+import 'package:day_planner/common/utils/app_utils.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class DailyList extends StatelessWidget {
   const DailyList({super.key});
@@ -38,7 +40,7 @@ class DailyList extends StatelessWidget {
               direction: DismissDirection.endToStart,
               child: ListTile(
                 leading: Text(
-                  _formatDateTime(dayEvent.from, dayEvent.to),
+                  formatDateTime(dayEvent.from, dayEvent.to),
                 ),
                 title: Text(dayEvent.name),
                 subtitle: Text(dayEvent.category),
@@ -54,15 +56,12 @@ class DailyList extends StatelessWidget {
                         ],
                       )
                     : null,
+                onTap: () => context.push(viewEventRoute, extra: {'dayEvent': dayEvent}),
               ),
             );
           },
         ),
       );
     });
-  }
-
-  String _formatDateTime(DateTime from, DateTime to) {
-    return '${DateFormat('HH:mm').format(from)} - ${DateFormat('HH:mm').format(to)}';
   }
 }

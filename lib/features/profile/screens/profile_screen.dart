@@ -5,6 +5,7 @@ import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
 import 'package:day_planner/features/profile/bloc/profile_event.dart';
 import 'package:day_planner/features/profile/bloc/profile_state.dart';
+import 'package:day_planner/features/theme/bloc/theme_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -22,7 +23,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = context.watch<ThemeBloc>();
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<ThemeBloc>().add(
+                    SetTheme(
+                      themeMode.state.themeMode.isLight ? ThemeMode.dark : ThemeMode.light,
+                    ),
+                  );
+            },
+            icon: const Icon(Icons.sunny),
+          )
+        ],
+      ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: _profileListener,
         builder: (context, state) {

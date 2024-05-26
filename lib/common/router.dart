@@ -1,7 +1,9 @@
 import 'package:day_planner/common/screens/splash_screen.dart';
 import 'package:day_planner/features/auth/screens/auth_screen.dart';
 import 'package:day_planner/features/auth/screens/phone_verification_screen.dart';
+import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/day_planner/screens/add_event_screen.dart';
+import 'package:day_planner/features/day_planner/screens/view_event_screen.dart';
 import 'package:day_planner/features/main_page/screens/main_screen.dart';
 import 'package:day_planner/features/posts/posts.dart';
 import 'package:day_planner/features/profile/screens/profile_screen.dart';
@@ -30,6 +32,7 @@ const String profileRoute = '/profile';
 const String pagesRoute = '/pages';
 const String postsRoute = '/posts';
 const String addEventRoute = '/add-event';
+const String viewEventRoute = '/view-add-event';
 const String pagesDynamicRoute = ':id';
 const String firstPageRoute = '/pages/1';
 const String openSourceLicensesPageRoute = '/open-source-licenses';
@@ -86,6 +89,13 @@ final goRouter = GoRouter(
       pageBuilder: (context, state) => _TransitionPage(
         key: state.pageKey,
         child: const AddEventScreen(),
+      ),
+    ),
+    GoRoute(
+      path: viewEventRoute,
+      pageBuilder: (context, state) => _TransitionPage(
+        key: state.pageKey,
+        child: ViewEventScreen(dayEvent: (state.extra as Map<String, DayEvent>)['dayEvent']!),
       ),
     ),
     GoRoute(

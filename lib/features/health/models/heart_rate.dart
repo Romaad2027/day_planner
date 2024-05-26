@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 import 'package:health/health.dart';
 
-class HeartRate {
+class HeartRate extends Equatable {
   final int heartRate;
   final DateTime dateTime;
 
@@ -23,4 +24,10 @@ class HeartRate {
         'date_time': dateTime,
         'heart_rate': heartRate,
       };
+
+  @override
+  List<Object?> get props => [
+        heartRate,
+        dateTime,
+      ];
 }

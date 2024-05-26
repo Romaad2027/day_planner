@@ -1,5 +1,6 @@
 import 'package:day_planner/features/health/models/heart_rate.dart';
 import 'package:day_planner/features/health/models/steps.dart';
+import 'package:intl/intl.dart';
 
 import '../assets.dart';
 import '../services/credentials_loader.dart';
@@ -61,6 +62,10 @@ bool checkIfDateInRange({required DateTime check, required DateTime begin, requi
 
 DateTime extractTimeFromDate(DateTime dateTime) {
   return DateTime(dateTime.year, dateTime.month, dateTime.day);
+}
+
+String formatDateTime(DateTime from, DateTime to) {
+  return '${DateFormat('HH:mm').format(from)} - ${DateFormat('HH:mm').format(to)}';
 }
 
 int? calculateTotalSteps(List<Steps> steps) {

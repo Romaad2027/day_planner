@@ -13,22 +13,32 @@ class Calendar extends StatefulWidget {
 
 class _CalendarState extends State<Calendar> {
   late DateTime _currentDay;
+  late DateTime _focusedDay = DateTime.now();
+  CalendarFormat _calendarFormat = CalendarFormat.week;
 
   @override
   Widget build(BuildContext context) {
     _currentDay = context.read<DayPlannerBloc>().state.day ?? DateTime.now();
     return TableCalendar(
-      focusedDay: DateTime.now(),
+      focusedDay: _focusedDay,
       firstDay: DateTime.utc(2010, 1, 1),
       lastDay: DateTime.now().add(const Duration(days: 365)),
       currentDay: _currentDay,
-      calendarFormat: CalendarFormat.week,
-      onDaySelected: (date, prev) {
+      calendarFormat: _calendarFormat,
+      onFormatChanged: (format) {
         setState(() {
-          _currentDay = date;
+          _calendarFormat = format;
         });
-        context.read<DayPlannerBloc>().add(SetDay(date));
-        context.read<DayPlannerBloc>().add(ListenToDay(date));
+      },
+      onPageChanged: (focusedDay) => _focusedDay = focusedDay,
+      selectedDayPredicate: (day) => isSameDay(_currentDay, day),
+      onDaySelected: (selectedDay, focusedDay) {
+        setState(() {
+          _currentDay = selectedDay;
+          _focusedDay = focusedDay;
+        });
+        context.read<DayPlannerBloc>().add(SetDay(selectedDay));
+        context.read<DayPlannerBloc>().add(ListenToDay(selectedDay));
       },
     );
   }
