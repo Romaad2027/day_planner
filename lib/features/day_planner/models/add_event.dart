@@ -1,4 +1,6 @@
-class AddEventModel {
+import 'package:equatable/equatable.dart';
+
+class AddEventModel extends Equatable {
   final String name;
   final String category;
   final DateTime from;
@@ -17,4 +19,12 @@ class AddEventModel {
         'from': from,
         'to': to,
       };
+
+  @override
+  List<Object?> get props => [
+        name,
+        category,
+        from,
+        to,
+      ];
 }

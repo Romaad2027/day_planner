@@ -7,8 +7,13 @@ import 'package:go_router/go_router.dart';
 
 class EventCard extends StatelessWidget {
   final DayEvent event;
+  final Color? cardColor;
 
-  const EventCard({super.key, required this.event});
+  const EventCard({
+    super.key,
+    required this.event,
+    this.cardColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,7 @@ class EventCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () => context.push(viewEventRoute, extra: {'dayEvent': event}),
         child: Card(
-          color: colorScheme.primary,
+          color: cardColor ?? colorScheme.primary,
           child: ClipRect(
             child: Container(
               padding: cardPadding,

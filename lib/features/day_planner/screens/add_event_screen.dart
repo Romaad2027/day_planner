@@ -1,3 +1,4 @@
+import 'package:day_planner/common/utils/app_utils.dart';
 import 'package:day_planner/common/widgets/common_app_bar.dart';
 import 'package:day_planner/common/widgets/flushbar.dart';
 import 'package:day_planner/common/widgets/loading_button.dart';
@@ -6,6 +7,9 @@ import 'package:day_planner/common/widgets/text_scales.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
+import 'package:day_planner/features/day_planner/models/add_event.dart';
+import 'package:day_planner/features/day_planner/widgets/time_range_input.dart';
+import 'package:day_planner/features/main_page/widgets/schedule_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -45,115 +49,125 @@ class _AddEventScreenState extends State<AddEventScreen> {
           style: context.textStyle(TextScale.titleLarge),
         ),
       ),
-      body: BlocConsumer<DayPlannerBloc, DayPlannerState>(
-        listener: _dayPlannerListener,
-        builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Input data',
-                    style: context.textStyle(TextScale.headlineMedium),
-                  ),
-                  const SizedBox(height: 32),
-                  CommonTextField(
-                    hintText: 'Event name',
-                    controller: _nameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Invalid nickname';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: DropdownButtonFormField(
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                      hint: const Text('Select category'),
-                      value: _category,
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'Sport',
-                          child: Text('Sport'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Education',
-                          child: Text('Education'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Rest',
-                          child: Text('Rest'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _category = value;
-                        });
-                      },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<DayPlannerBloc, DayPlannerState>(
+            listenWhen: (prev, curr) => prev.dayPlannerStatus != curr.dayPlannerStatus,
+            listener: _dayPlannerListener,
+          ),
+        ],
+        child: BlocBuilder<DayPlannerBloc, DayPlannerState>(
+          builder: (context, state) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Input data',
+                      style: context.textStyle(TextScale.headlineMedium),
+                    ),
+                    const SizedBox(height: 32),
+                    CommonTextField(
+                      hintText: 'Event name',
+                      controller: _nameController,
                       validator: (value) {
-                        if (_category == null) {
-                          return 'Select category';
+                        if (value == null || value.isEmpty) {
+                          return 'Invalid name';
                         }
                         return null;
                       },
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  _timeSelect(
-                    context,
-                    timeOfDay: _from,
-                    onTap: () async {
-                      final selected = await showTimePicker(context: context, initialTime: _from);
-                      if (selected != null) {
-                        setState(() {
-                          _from = selected;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _timeSelect(
-                    context,
-                    timeOfDay: _to,
-                    label: 'End',
-                    onTap: () async {
-                      final selected = await showTimePicker(context: context, initialTime: _to);
-                      if (selected != null) {
-                        setState(() {
-                          _to = selected;
-                        });
-                      }
-                    },
-                  ),
-                  if (!isTimeValid) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      _timeErrorText,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: DropdownButtonFormField(
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                        hint: const Text('Select category'),
+                        value: _category,
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Sport',
+                            child: Text('Sport'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Education',
+                            child: Text('Education'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Rest',
+                            child: Text('Rest'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _category = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (_category == null) {
+                            return 'Select category';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    _timeSelect(
+                      context,
+                      timeOfDay: _from,
+                    ),
+                    const SizedBox(height: 16),
+                    _timeSelect(
+                      context,
+                      timeOfDay: _to,
+                      label: 'End',
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: FilledButton(
+                        onPressed: () async {
+                          context.read<DayPlannerBloc>().add(const ClearAddStatus());
+                          final newEvent = await showDialog<AddEventModel>(
+                            context: context,
+                            builder: (context) => const CalendarDialog(),
+                          );
+                          if (newEvent != null) {
+                            setState(() {
+                              _from = TimeOfDay(hour: newEvent.from.hour, minute: newEvent.from.minute);
+                              _to = TimeOfDay(hour: newEvent.to.hour, minute: newEvent.to.minute);
+                            });
+                          }
+                        },
+                        child: const Text('Choose time'),
+                      ),
+                    ),
+                    if (!isTimeValid) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _timeErrorText,
+                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+                    Center(
+                      child: LoadingButton(
+                        isLoading: state.dayPlannerStatus.isLoading,
+                        onPressed: () => _handleAddButtonPress(context),
+                        child: const Text('Add'),
+                      ),
                     ),
                   ],
-                  const SizedBox(height: 32),
-                  Center(
-                    child: LoadingButton(
-                      isLoading: state.dayPlannerStatus.isLoading,
-                      onPressed: () => _handleAddButtonPress(context),
-                      child: const Text('Add'),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -169,7 +183,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
         setState(() => isTimeValid = false);
         return;
       }
-      if (!_compareDates(fromDate, toDate)) {
+      if (!compareDates(fromDate, toDate)) {
         setState(() {
           isTimeValid = false;
           _timeErrorText = '"End" date can not be earlier than "begin"';
@@ -190,7 +204,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
   Widget _timeSelect(
     BuildContext context, {
     required TimeOfDay timeOfDay,
-    required VoidCallback onTap,
     String label = 'Begin',
   }) {
     return Row(
@@ -204,7 +217,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
           borderRadius: BorderRadius.circular(16.0),
           child: InkWell(
             borderRadius: BorderRadius.circular(16.0),
-            onTap: onTap,
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
@@ -236,10 +248,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
     return dateTime;
   }
 
-  bool _compareDates(DateTime from, DateTime to) {
-    return from.compareTo(to) != 1;
-  }
-
   void _dayPlannerListener(BuildContext context, DayPlannerState state) {
     if (state.dayPlannerStatus.isSuccess) {
       context.pop();
@@ -247,5 +255,33 @@ class _AddEventScreenState extends State<AddEventScreen> {
     if (state.dayPlannerStatus.isError) {
       showSnackBar(context, status: FlushbarStatus.error);
     }
+  }
+}
+
+class CalendarDialog extends StatelessWidget {
+  const CalendarDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<DayPlannerBloc, DayPlannerState>(
+      builder: (context, state) {
+        final addModel = state.addEventModel;
+        return AlertDialog(
+          title: const Text('Calendar'),
+          content: ScheduleView(addNewEvent: addModel),
+          actions: [
+            const TimeRangeInput(),
+            FilledButton(
+              onPressed: state.newDateTimeStatus.isSuccess
+                  ? () {
+                      Navigator.pop(context, state.addEventModel);
+                    }
+                  : null,
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

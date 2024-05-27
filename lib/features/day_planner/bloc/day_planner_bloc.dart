@@ -5,7 +5,10 @@ import 'package:day_planner/common/utils/utils.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
 import 'package:day_planner/features/day_planner/models/add_event.dart';
+import 'package:day_planner/features/day_planner/models/current_day_status.dart';
 import 'package:day_planner/features/day_planner/models/day_event.dart';
+import 'package:day_planner/features/day_planner/models/day_planner_status.dart';
+import 'package:day_planner/features/day_planner/models/new_date_time_status.dart';
 import 'package:day_planner/features/day_planner/repositories/events_repository.dart';
 import 'package:day_planner/features/health/models/health_model.dart';
 import 'package:day_planner/features/health/models/heart_rate.dart';
@@ -29,6 +32,8 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
     on<DeleteEvent>(_onDeleteEvent);
     on<FetchHealthData>(_onFetchHealthData);
     on<StartTimer>(_onStartTimer);
+    on<ValidateNewEventDateTime>(_onValidateNewEventDateTime);
+    on<ClearAddStatus>(_onClearAddStatus);
   }
 
   Future<void> _onAddNewEvent(AddNewEvent event, Emitter<DayPlannerState> emit) async {
@@ -40,7 +45,7 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
         from: event.from,
         to: event.to,
       );
-      if (!isValidNewEventTime(addEvent, state.currentDayEvents)) {
+      if (!isValidNewEventTime(addEvent.from, addEvent.to, state.currentDayEvents)) {
         emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.error, errorMessage: ''));
         return;
       }
@@ -137,6 +142,33 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
     _timer = Timer.periodic(const Duration(minutes: 2), (timer) {
       add(const FetchHealthData(onlyCurrentEvent: true));
     });
+  }
+
+  void _onValidateNewEventDateTime(ValidateNewEventDateTime event, Emitter<DayPlannerState> emit) {
+    emit(state.copyWith(newDateTimeStatus: NewDateTimeStatus.checking));
+    final events = state.dayEvents;
+    final addEventModel = AddEventModel(
+      name: 'New',
+      category: 'Event',
+      from: event.from,
+      to: event.to,
+    );
+    if (!compareDates(event.from, event.to)) {
+      emit(state.copyWith(newDateTimeStatus: NewDateTimeStatus.rangeError, addEventModel: addEventModel));
+      return;
+    }
+    if (!isValidNewEventTime(event.from, event.to, events)) {
+      emit(state.copyWith(newDateTimeStatus: NewDateTimeStatus.placedError, addEventModel: addEventModel));
+      return;
+    }
+    emit(state.copyWith(newDateTimeStatus: NewDateTimeStatus.success, addEventModel: addEventModel));
+  }
+
+  void _onClearAddStatus(ClearAddStatus event, Emitter<DayPlannerState> emit) {
+    emit(state.copyWith(
+      newDateTimeStatus: NewDateTimeStatus.initial,
+      clearAddModel: true,
+    ));
   }
 
   List<DayEvent> _getEventsForHealthUpdate(bool onlyCurrentEvent) {

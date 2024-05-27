@@ -1,5 +1,7 @@
+import 'package:day_planner/common/utils/utils.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
+import 'package:day_planner/features/day_planner/models/add_event.dart';
 import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/main_page/widgets/event_card.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +14,13 @@ const double cardMarginHorizontal = 8.0;
 const EdgeInsets cardPadding = EdgeInsets.all(8.0);
 
 class ScheduleView extends StatelessWidget {
-  const ScheduleView({super.key});
+  // For dynamically showing new adding events
+  final AddEventModel? addNewEvent;
+
+  const ScheduleView({
+    this.addNewEvent,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +40,17 @@ class ScheduleView extends StatelessWidget {
             ),
             ...events.map((event) => PositionedEventCard(event: event)).toList(),
             const TimeLine(),
+            if (addNewEvent != null)
+              Positioned(
+                top: calculateEventTop(DayEvent.fromAddNewEvent(addNewEvent!), hourSlotHeight),
+                left: timeLabelWidth,
+                right: 0,
+                height: calculateEventHeight(DayEvent.fromAddNewEvent(addNewEvent!), hourSlotHeight),
+                child: EventCard(
+                  cardColor: Theme.of(context).colorScheme.inversePrimary,
+                  event: DayEvent.fromAddNewEvent(addNewEvent!),
+                ),
+              ),
           ],
         ),
       );
@@ -97,18 +116,13 @@ class PositionedEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fromHour = event.from.hour;
-    final fromMinute = event.from.minute;
-    final toHour = event.to.hour;
-    final toMinute = event.to.minute;
-
-    final top = ((fromHour * 60 + fromMinute) / 60) * hourSlotHeight; // Calculate top position using global constant
-    final height = (((toHour * 60 + toMinute) - (fromHour * 60 + fromMinute)) / 60) *
-        hourSlotHeight; // Calculate height using global constant
+    final top = calculateEventTop(event, hourSlotHeight);
+    final height = calculateEventHeight(event, hourSlotHeight);
 
     return Positioned(
       top: top,
-      left: timeLabelWidth, // Use global constant
+      left: timeLabelWidth,
+      // Use global constant
       right: 0,
       height: height <= 29 ? 30 : height + 16,
       child: EventCard(event: event),

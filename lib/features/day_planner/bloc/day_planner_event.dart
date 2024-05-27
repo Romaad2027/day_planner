@@ -46,3 +46,14 @@ class FetchHealthData extends DayPlannerEvent {
 class StartTimer extends DayPlannerEvent {
   const StartTimer();
 }
+
+class ValidateNewEventDateTime extends DayPlannerEvent {
+  final DateTime from;
+  final DateTime to;
+
+  const ValidateNewEventDateTime(this.from, this.to);
+}
+
+class ClearAddStatus extends DayPlannerEvent {
+  const ClearAddStatus();
+}

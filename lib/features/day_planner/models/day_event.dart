@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:day_planner/features/day_planner/models/add_event.dart';
 import 'package:day_planner/features/health/models/health_model.dart';
 import 'package:equatable/equatable.dart';
 
@@ -38,6 +39,17 @@ class DayEvent extends Equatable {
       from: (json['from'] as Timestamp).toDate(),
       to: (json['to'] as Timestamp).toDate(),
       healthModel: json['health_model'] != null ? HealthModel.fromJson(json['health_model']) : null,
+    );
+  }
+
+  factory DayEvent.fromAddNewEvent(AddEventModel model) {
+    return DayEvent(
+      docId: 'docId',
+      name: model.name,
+      category: model.category,
+      from: model.from,
+      to: model.to,
+      healthModel: null,
     );
   }
 

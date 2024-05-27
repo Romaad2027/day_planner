@@ -1,49 +1,32 @@
+import 'package:day_planner/features/day_planner/models/add_event.dart';
+import 'package:day_planner/features/day_planner/models/current_day_status.dart';
 import 'package:day_planner/features/day_planner/models/day_event.dart';
+import 'package:day_planner/features/day_planner/models/day_planner_status.dart';
+import 'package:day_planner/features/day_planner/models/new_date_time_status.dart';
 import 'package:equatable/equatable.dart';
-
-enum DayPlannerStatus {
-  initial,
-  loading,
-  success,
-  error;
-
-  bool get isInitial => this == DayPlannerStatus.initial;
-
-  bool get isLoading => this == DayPlannerStatus.loading;
-
-  bool get isSuccess => this == DayPlannerStatus.success;
-
-  bool get isError => this == DayPlannerStatus.error;
-}
-
-enum CurrentDayStatus {
-  initial,
-  success,
-  error;
-
-  bool get isInitial => this == CurrentDayStatus.initial;
-
-  bool get isSuccess => this == CurrentDayStatus.success;
-
-  bool get isError => this == CurrentDayStatus.error;
-}
 
 class DayPlannerState extends Equatable {
   final DayPlannerStatus dayPlannerStatus;
   final CurrentDayStatus currentDayStatus;
   final DateTime? day;
 
+  final AddEventModel? addEventModel;
+
   final List<DayEvent> dayEvents;
   final List<DayEvent> currentDayEvents;
 
   final String? errorMessage;
+
+  final NewDateTimeStatus newDateTimeStatus;
 
   const DayPlannerState({
     this.dayPlannerStatus = DayPlannerStatus.initial,
     this.currentDayStatus = CurrentDayStatus.initial,
     this.dayEvents = const <DayEvent>[],
     this.currentDayEvents = const <DayEvent>[],
+    this.newDateTimeStatus = NewDateTimeStatus.initial,
     this.day,
+    this.addEventModel,
     this.errorMessage,
   });
 
@@ -52,16 +35,21 @@ class DayPlannerState extends Equatable {
     CurrentDayStatus? currentDayStatus,
     List<DayEvent>? dayEvents,
     List<DayEvent>? currentDayEvents,
+    NewDateTimeStatus? newDateTimeStatus,
     DateTime? day,
     String? errorMessage,
+    AddEventModel? addEventModel,
+    bool clearAddModel = false,
   }) =>
       DayPlannerState(
         dayPlannerStatus: dayPlannerStatus ?? this.dayPlannerStatus,
         currentDayStatus: currentDayStatus ?? this.currentDayStatus,
         dayEvents: dayEvents ?? this.dayEvents,
+        newDateTimeStatus: newDateTimeStatus ?? this.newDateTimeStatus,
         day: day ?? this.day,
         currentDayEvents: currentDayEvents ?? this.currentDayEvents,
         errorMessage: errorMessage ?? this.errorMessage,
+        addEventModel: clearAddModel ? null : (addEventModel ?? this.addEventModel),
       );
 
   @override
@@ -70,8 +58,10 @@ class DayPlannerState extends Equatable {
         currentDayStatus,
         dayEvents,
         day,
+        newDateTimeStatus,
         dayEvents,
         currentDayEvents,
         errorMessage,
+        addEventModel,
       ];
 }

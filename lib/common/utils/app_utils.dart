@@ -1,4 +1,3 @@
-import 'package:day_planner/features/day_planner/models/add_event.dart';
 import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/health/models/heart_rate.dart';
 import 'package:day_planner/features/health/models/steps.dart';
@@ -81,13 +80,17 @@ int? calculateTotalSteps(List<Steps> steps) {
   return totalSteps;
 }
 
-bool isValidNewEventTime(AddEventModel newEvent, List<DayEvent> existingEvents) {
+bool isValidNewEventTime(DateTime from, DateTime to, List<DayEvent> existingEvents) {
   for (DayEvent event in existingEvents) {
-    if (newEvent.from.isBefore(event.to) && newEvent.to.isAfter(event.from)) {
+    if (from.isBefore(event.to) && to.isAfter(event.from)) {
       return false;
     }
   }
   return true;
+}
+
+bool compareDates(DateTime from, DateTime to) {
+  return from.compareTo(to) != 1;
 }
 
 int? calculateAverageHeartRate(List<HeartRate> heartRates) {
@@ -99,4 +102,20 @@ int? calculateAverageHeartRate(List<HeartRate> heartRates) {
     totalHeartRate += h.heartRate;
   }
   return totalHeartRate ~/ heartRates.length;
+}
+
+double calculateEventTop(DayEvent event, double hourSlotHeight) {
+  final fromHour = event.from.hour;
+  final fromMinute = event.from.minute;
+
+  return ((fromHour * 60 + fromMinute) / 60) * hourSlotHeight;
+}
+
+double calculateEventHeight(DayEvent event, double hourSlotHeight) {
+  final fromHour = event.from.hour;
+  final fromMinute = event.from.minute;
+  final toHour = event.to.hour;
+  final toMinute = event.to.minute;
+
+  return (((toHour * 60 + toMinute) - (fromHour * 60 + fromMinute)) / 60) * hourSlotHeight;
 }
