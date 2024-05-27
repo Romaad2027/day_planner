@@ -40,6 +40,10 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
         from: event.from,
         to: event.to,
       );
+      if (!isValidNewEventTime(addEvent, state.currentDayEvents)) {
+        emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.error, errorMessage: ''));
+        return;
+      }
       await _eventsRepository.addEvent(addEvent);
       emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.success));
     } catch (e) {
@@ -84,6 +88,7 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
             dayEvents.add(data);
           }
         }
+        dayEvents.sort((a, b) => a.from.compareTo(b.from));
         return state.copyWith(dayEvents: dayEvents);
       },
     );

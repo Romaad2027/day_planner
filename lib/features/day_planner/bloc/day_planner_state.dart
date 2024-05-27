@@ -36,12 +36,15 @@ class DayPlannerState extends Equatable {
   final List<DayEvent> dayEvents;
   final List<DayEvent> currentDayEvents;
 
+  final String? errorMessage;
+
   const DayPlannerState({
     this.dayPlannerStatus = DayPlannerStatus.initial,
     this.currentDayStatus = CurrentDayStatus.initial,
     this.dayEvents = const <DayEvent>[],
     this.currentDayEvents = const <DayEvent>[],
     this.day,
+    this.errorMessage,
   });
 
   DayPlannerState copyWith({
@@ -50,6 +53,7 @@ class DayPlannerState extends Equatable {
     List<DayEvent>? dayEvents,
     List<DayEvent>? currentDayEvents,
     DateTime? day,
+    String? errorMessage,
   }) =>
       DayPlannerState(
         dayPlannerStatus: dayPlannerStatus ?? this.dayPlannerStatus,
@@ -57,6 +61,7 @@ class DayPlannerState extends Equatable {
         dayEvents: dayEvents ?? this.dayEvents,
         day: day ?? this.day,
         currentDayEvents: currentDayEvents ?? this.currentDayEvents,
+        errorMessage: errorMessage ?? this.errorMessage,
       );
 
   @override
@@ -67,5 +72,6 @@ class DayPlannerState extends Equatable {
         day,
         dayEvents,
         currentDayEvents,
+        errorMessage,
       ];
 }

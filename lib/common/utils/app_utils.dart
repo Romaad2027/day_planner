@@ -1,3 +1,5 @@
+import 'package:day_planner/features/day_planner/models/add_event.dart';
+import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/health/models/heart_rate.dart';
 import 'package:day_planner/features/health/models/steps.dart';
 import 'package:intl/intl.dart';
@@ -77,6 +79,15 @@ int? calculateTotalSteps(List<Steps> steps) {
     totalSteps += s.steps;
   }
   return totalSteps;
+}
+
+bool isValidNewEventTime(AddEventModel newEvent, List<DayEvent> existingEvents) {
+  for (DayEvent event in existingEvents) {
+    if (newEvent.from.isBefore(event.to) && newEvent.to.isAfter(event.from)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 int? calculateAverageHeartRate(List<HeartRate> heartRates) {

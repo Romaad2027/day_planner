@@ -1,11 +1,10 @@
-import 'package:day_planner/common/router.dart';
 import 'package:day_planner/common/utils/app_utils.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
+import 'package:day_planner/features/main_page/widgets/event_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 class DailyList extends StatelessWidget {
   const DailyList({super.key});
@@ -18,49 +17,39 @@ class DailyList extends StatelessWidget {
           child: Text('No data for today'),
         );
       }
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: state.dayEvents.length,
-          itemBuilder: (context, index) {
-            final dayEvent = state.dayEvents[index];
-            return Dismissible(
-              key: UniqueKey(),
-              background: Container(
-                color: Theme.of(context).colorScheme.error,
-                child: Icon(
-                  Icons.delete,
-                  color: Theme.of(context).colorScheme.onError,
-                ),
+      return ListView.builder(
+        shrinkWrap: true,
+        itemCount: state.dayEvents.length,
+        itemBuilder: (context, index) {
+          final dayEvent = state.dayEvents[index];
+          final healthModel = dayEvent.healthModel;
+          final isCurrEvent = checkIfDateInRange(
+            check: DateTime.now(),
+            begin: dayEvent.from,
+            end: dayEvent.to,
+          );
+          return Dismissible(
+            key: UniqueKey(),
+            background: Container(
+              color: Theme.of(context).colorScheme.error,
+              child: Icon(
+                Icons.delete,
+                color: Theme.of(context).colorScheme.onError,
               ),
-              onDismissed: (direction) {
-                context.read<DayPlannerBloc>().add(DeleteEvent(dayEvent.docId, dayEvent.from));
-              },
-              direction: DismissDirection.endToStart,
-              child: ListTile(
-                leading: Text(
-                  formatDateTime(dayEvent.from, dayEvent.to),
-                ),
-                title: Text(dayEvent.name),
-                subtitle: Text(dayEvent.category),
-                trailing: dayEvent.healthModel != null
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.monitor_heart),
-                          Text(dayEvent.healthModel!.averageHeartRate.toString()),
-                          const Icon(Icons.local_fire_department),
-                          Text(dayEvent.healthModel!.totalSteps.toString()),
-                          const Icon(Icons.arrow_forward_ios),
-                        ],
-                      )
-                    : null,
-                onTap: () => context.push(viewEventRoute, extra: {'dayEvent': dayEvent}),
+            ),
+            onDismissed: (direction) {
+              context.read<DayPlannerBloc>().add(DeleteEvent(dayEvent.docId, dayEvent.from));
+            },
+            direction: DismissDirection.endToStart,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: EventTile(
+                dayEvent: dayEvent,
+                isCurrEvent: isCurrEvent,
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       );
     });
   }
