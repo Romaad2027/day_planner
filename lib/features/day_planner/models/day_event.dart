@@ -42,9 +42,9 @@ class DayEvent extends Equatable {
     );
   }
 
-  factory DayEvent.fromAddNewEvent(AddEventModel model) {
+  factory DayEvent.fromAddNewEvent(AddEventModel model, [String docId = '']) {
     return DayEvent(
-      docId: 'docId',
+      docId: docId,
       name: model.name,
       category: model.category,
       from: model.from,

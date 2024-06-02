@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:day_planner/common/utils/utils.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
@@ -13,48 +15,92 @@ const double cardMarginVertical = 2.0;
 const double cardMarginHorizontal = 8.0;
 const EdgeInsets cardPadding = EdgeInsets.all(8.0);
 
-class ScheduleView extends StatelessWidget {
-  // For dynamically showing new adding events
+class ScheduleViewWrapper extends StatelessWidget {
   final AddEventModel? addNewEvent;
 
-  const ScheduleView({
+  const ScheduleViewWrapper({
     this.addNewEvent,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DayPlannerBloc, DayPlannerState>(builder: (context, state) {
-      final events = state.dayEvents;
-      return SingleChildScrollView(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                children: List.generate(24, (index) {
-                  final time = TimeOfDay(hour: index, minute: 0);
-                  return TimeSlotRow(time: time);
-                }),
+    return BlocBuilder<DayPlannerBloc, DayPlannerState>(
+      builder: (context, state) => ScheduleView(
+        events: state.dayEvents,
+        day: state.day,
+      ),
+    );
+  }
+}
+
+class ScheduleManageEventView extends StatelessWidget {
+  final AddEventModel? addNewEvent;
+  final List<DayEvent> dayEvents;
+  final DateTime? day;
+
+  const ScheduleManageEventView({
+    required this.dayEvents,
+    required this.day,
+    this.addNewEvent,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ScheduleView(
+      addNewEvent: addNewEvent,
+      events: dayEvents,
+      day: day,
+    );
+  }
+}
+
+class ScheduleView extends StatelessWidget {
+  // For dynamically showing new adding events
+  final AddEventModel? addNewEvent;
+
+  final List<DayEvent> events;
+
+  final DateTime? day;
+
+  const ScheduleView({
+    required this.events,
+    required this.day,
+    this.addNewEvent,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Column(
+              children: List.generate(24, (index) {
+                final time = TimeOfDay(hour: index, minute: 0);
+                return TimeSlotRow(time: time);
+              }),
+            ),
+          ),
+          ...events.map((event) => PositionedEventCard(event: event)).toList(),
+          if (day == null || day?.day == DateTime.now().day) const TimeLine(),
+          if (addNewEvent != null)
+            Positioned(
+              top: calculateEventTop(DayEvent.fromAddNewEvent(addNewEvent!), hourSlotHeight),
+              left: timeLabelWidth,
+              right: 0,
+              height: calculateEventHeight(DayEvent.fromAddNewEvent(addNewEvent!), hourSlotHeight),
+              child: EventCard(
+                cardColor: Theme.of(context).colorScheme.inversePrimary,
+                event: DayEvent.fromAddNewEvent(addNewEvent!),
               ),
             ),
-            ...events.map((event) => PositionedEventCard(event: event)).toList(),
-            const TimeLine(),
-            if (addNewEvent != null)
-              Positioned(
-                top: calculateEventTop(DayEvent.fromAddNewEvent(addNewEvent!), hourSlotHeight),
-                left: timeLabelWidth,
-                right: 0,
-                height: calculateEventHeight(DayEvent.fromAddNewEvent(addNewEvent!), hourSlotHeight),
-                child: EventCard(
-                  cardColor: Theme.of(context).colorScheme.inversePrimary,
-                  event: DayEvent.fromAddNewEvent(addNewEvent!),
-                ),
-              ),
-          ],
-        ),
-      );
-    });
+        ],
+      ),
+    );
   }
 }
 
@@ -88,20 +134,47 @@ class TimeSlotRow extends StatelessWidget {
   }
 }
 
-class TimeLine extends StatelessWidget {
+class TimeLine extends StatefulWidget {
   const TimeLine({super.key});
 
   @override
+  State<TimeLine> createState() => _TimeLineState();
+}
+
+class _TimeLineState extends State<TimeLine> {
+  late int nowHour;
+  late int nowMinute;
+
+  late Timer _timeTimer;
+
+  @override
+  void initState() {
+    nowHour = DateTime.now().hour;
+    nowMinute = DateTime.now().minute;
+    _timeTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      setState(() {
+        nowHour = DateTime.now().hour;
+        nowMinute = DateTime.now().minute;
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _timeTimer.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final nowHour = DateTime.now().hour;
-    final nowMinute = DateTime.now().minute;
     final top = ((nowHour * 60 + nowMinute) / 60) * hourSlotHeight;
     return Positioned(
       top: top,
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
         child: Divider(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.tertiary,
           thickness: 2,
         ),
       ),
@@ -122,7 +195,6 @@ class PositionedEventCard extends StatelessWidget {
     return Positioned(
       top: top,
       left: timeLabelWidth,
-      // Use global constant
       right: 0,
       height: height <= 29 ? 30 : height + 16,
       child: EventCard(event: event),

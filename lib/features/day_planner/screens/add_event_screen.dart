@@ -8,6 +8,7 @@ import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
 import 'package:day_planner/features/day_planner/models/add_event.dart';
+import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/day_planner/widgets/time_range_input.dart';
 import 'package:day_planner/features/main_page/widgets/schedule_list.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class AddEventScreen extends StatefulWidget {
-  const AddEventScreen({super.key});
+  final bool isEditMode;
+  final DayEvent? dayEvent;
+
+  const AddEventScreen({
+    this.isEditMode = true,
+    this.dayEvent,
+    super.key,
+  }) : assert((isEditMode && dayEvent != null) || (!isEditMode && dayEvent == null));
 
   @override
   State<AddEventScreen> createState() => _AddEventScreenState();
@@ -34,9 +42,14 @@ class _AddEventScreenState extends State<AddEventScreen> {
 
   @override
   void initState() {
+    final dayEvent = widget.dayEvent;
     final now = TimeOfDay.now();
-    _from = now;
-    _to = TimeOfDay(hour: now.hour + 1, minute: now.minute);
+    _from = widget.isEditMode ? TimeOfDay(hour: dayEvent!.from.hour, minute: dayEvent.from.minute) : now;
+    _to = widget.isEditMode
+        ? TimeOfDay(hour: dayEvent!.to.hour, minute: dayEvent.to.minute)
+        : TimeOfDay(hour: now.hour + 1, minute: now.minute);
+    _nameController.text = dayEvent?.name ?? '';
+    _category = dayEvent?.category;
     super.initState();
   }
 
@@ -45,7 +58,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
     return Scaffold(
       appBar: CommonAppBar(
         title: Text(
-          'Add Event',
+          widget.isEditMode ? 'Edit mode' : 'Add Event',
           style: context.textStyle(TextScale.titleLarge),
         ),
       ),
@@ -103,6 +116,14 @@ class _AddEventScreenState extends State<AddEventScreen> {
                             value: 'Rest',
                             child: Text('Rest'),
                           ),
+                          DropdownMenuItem(
+                            value: 'Work',
+                            child: Text('Work'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Other',
+                            child: Text('Other'),
+                          ),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -135,7 +156,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
                           context.read<DayPlannerBloc>().add(const ClearAddStatus());
                           final newEvent = await showDialog<AddEventModel>(
                             context: context,
-                            builder: (context) => const CalendarDialog(),
+                            builder: (context) => CalendarDialog(editedEvent: widget.dayEvent),
                           );
                           if (newEvent != null) {
                             setState(() {
@@ -159,7 +180,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
                       child: LoadingButton(
                         isLoading: state.dayPlannerStatus.isLoading,
                         onPressed: () => _handleAddButtonPress(context),
-                        child: const Text('Add'),
+                        child: widget.isEditMode ? const Text('Update') : const Text('Add'),
                       ),
                     ),
                   ],
@@ -188,6 +209,18 @@ class _AddEventScreenState extends State<AddEventScreen> {
           isTimeValid = false;
           _timeErrorText = '"End" date can not be earlier than "begin"';
         });
+        return;
+      }
+      if (widget.isEditMode) {
+        final dayEvent = DayEvent(
+          docId: widget.dayEvent!.docId,
+          name: _nameController.text,
+          category: _category!,
+          from: fromDate,
+          to: toDate,
+          healthModel: widget.dayEvent?.healthModel,
+        );
+        context.read<DayPlannerBloc>().add(UpdateEvent(dayEvent));
         return;
       }
       context.read<DayPlannerBloc>().add(
@@ -252,6 +285,20 @@ class _AddEventScreenState extends State<AddEventScreen> {
     if (state.dayPlannerStatus.isSuccess) {
       context.pop();
     }
+    if (state.dayPlannerStatus.isUpdated) {
+      final day = context.read<DayPlannerBloc>().state.day ?? DateTime.now();
+      final fromDate = _formatAndValidateTime(day, _from);
+      final toDate = _formatAndValidateTime(day, _to);
+      final dayEvent = DayEvent(
+        docId: widget.dayEvent!.docId,
+        name: _nameController.text,
+        category: _category!,
+        from: fromDate!,
+        to: toDate!,
+        healthModel: widget.dayEvent?.healthModel,
+      );
+      context.pop(dayEvent);
+    }
     if (state.dayPlannerStatus.isError) {
       showSnackBar(context, status: FlushbarStatus.error);
     }
@@ -259,18 +306,37 @@ class _AddEventScreenState extends State<AddEventScreen> {
 }
 
 class CalendarDialog extends StatelessWidget {
-  const CalendarDialog({super.key});
+  final DayEvent? editedEvent;
+
+  const CalendarDialog({
+    this.editedEvent,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DayPlannerBloc, DayPlannerState>(
       builder: (context, state) {
         final addModel = state.addEventModel;
+        final events = [...state.dayEvents];
+        if (editedEvent != null) {
+          events.removeWhere((d) => d.docId == editedEvent!.docId);
+        }
         return AlertDialog(
           title: const Text('Calendar'),
-          content: ScheduleView(addNewEvent: addModel),
+          content: ScheduleManageEventView(
+            addNewEvent: addModel,
+            dayEvents: events,
+            day: state.day,
+          ),
           actions: [
-            const TimeRangeInput(),
+            TimeRangeInput(
+              editedDocId: editedEvent?.docId,
+              from: editedEvent != null
+                  ? TimeOfDay(hour: editedEvent!.from.hour, minute: editedEvent!.from.minute)
+                  : null,
+              to: editedEvent != null ? TimeOfDay(hour: editedEvent!.to.hour, minute: editedEvent!.to.minute) : null,
+            ),
             FilledButton(
               onPressed: state.newDateTimeStatus.isSuccess
                   ? () {

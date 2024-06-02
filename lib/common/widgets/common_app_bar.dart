@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? title;
+  final List<Widget>? actions;
 
   const CommonAppBar({
     this.title,
+    this.actions,
     super.key,
   });
 
@@ -13,6 +15,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       title: title,
+      actions: actions,
     );
   }
 

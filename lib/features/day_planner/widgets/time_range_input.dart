@@ -4,11 +4,21 @@ import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TimeRangeInput extends StatefulWidget {
-  const TimeRangeInput({super.key});
+  final TimeOfDay? from;
+  final TimeOfDay? to;
+  final String? editedDocId;
+
+  const TimeRangeInput({
+    this.from,
+    this.to,
+    this.editedDocId,
+    super.key,
+  });
 
   @override
   _TimeRangeInputState createState() => _TimeRangeInputState();
@@ -24,6 +34,10 @@ class _TimeRangeInputState extends State<TimeRangeInput> {
     super.initState();
     _startTimeController.addListener(_handleTimeChange);
     _endTimeController.addListener(_handleTimeChange);
+    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
+      _startTimeController.text = widget.from?.format(context) ?? '';
+      _endTimeController.text = widget.to?.format(context) ?? '';
+    });
   }
 
   void _handleTimeChange() {
@@ -31,7 +45,7 @@ class _TimeRangeInputState extends State<TimeRangeInput> {
       _debounceTimer!.cancel();
     }
 
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+    _debounceTimer = Timer(const Duration(milliseconds: 100), () {
       if (_startTimeController.text.length == 5 && _endTimeController.text.length == 5) {
         _triggerFunction();
       }
@@ -44,9 +58,14 @@ class _TimeRangeInputState extends State<TimeRangeInput> {
     if (from == null || to == null) {
       return;
     }
-    context.read<DayPlannerBloc>().add(ValidateNewEventDateTime(from, to));
-    print("Both time fields are fully filled with valid times: "
-        "${_startTimeController.text} - ${_endTimeController.text}");
+    context.read<DayPlannerBloc>().add(
+          ValidateNewEventDateTime(
+            from: from,
+            to: to,
+            isEditMode: true,
+            docId: widget.editedDocId,
+          ),
+        );
   }
 
   DateTime? parseDateTime(String time) {

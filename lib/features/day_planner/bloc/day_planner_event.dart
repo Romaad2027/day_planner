@@ -1,3 +1,5 @@
+import 'package:day_planner/features/day_planner/models/day_event.dart';
+
 abstract class DayPlannerEvent {
   const DayPlannerEvent();
 }
@@ -14,6 +16,12 @@ class AddNewEvent extends DayPlannerEvent {
     required this.from,
     required this.to,
   });
+}
+
+class UpdateEvent extends DayPlannerEvent {
+  final DayEvent dayEvent;
+
+  const UpdateEvent(this.dayEvent);
 }
 
 class SetDay extends DayPlannerEvent {
@@ -40,7 +48,8 @@ class DeleteEvent extends DayPlannerEvent {
 
 class FetchHealthData extends DayPlannerEvent {
   final bool onlyCurrentEvent;
-  const FetchHealthData({this.onlyCurrentEvent = false});
+  final List<DayEvent>? eventsToFetch;
+  const FetchHealthData({this.onlyCurrentEvent = false, this.eventsToFetch});
 }
 
 class StartTimer extends DayPlannerEvent {
@@ -51,7 +60,15 @@ class ValidateNewEventDateTime extends DayPlannerEvent {
   final DateTime from;
   final DateTime to;
 
-  const ValidateNewEventDateTime(this.from, this.to);
+  final String? docId;
+  final bool isEditMode;
+
+  const ValidateNewEventDateTime({
+    required this.from,
+    required this.to,
+    this.isEditMode = false,
+    this.docId,
+  });
 }
 
 class ClearAddStatus extends DayPlannerEvent {

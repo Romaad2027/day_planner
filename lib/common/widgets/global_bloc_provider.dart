@@ -3,6 +3,8 @@ import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:day_planner/features/auth/repositories/auth_repository.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
 import 'package:day_planner/features/day_planner/repositories/events_repository.dart';
+import 'package:day_planner/features/day_recomendations/bloc/day_recomendations_bloc.dart';
+import 'package:day_planner/features/day_recomendations/repository/recommendations_repository.dart';
 import 'package:day_planner/features/health/bloc/health_bloc.dart';
 import 'package:day_planner/features/health/services/health.dart';
 import 'package:day_planner/features/posts/posts.dart';
@@ -47,6 +49,7 @@ class GlobalBlocProvider extends StatelessWidget {
         BlocProvider(
             create: (context) => DayPlannerBloc(context.read<EventsRepository>(), context.read<HealthService>())),
         BlocProvider(create: (context) => HealthBloc(context.read<HealthService>())),
+        BlocProvider(create: (context) => DayRecommendationsBloc(context.read<RecommendationsRepository>())),
         // BlocProvider(
         //   create: (context) => WebSocketCubit(webSocketService: InjectorModule.locator()),
         // ),

@@ -12,6 +12,7 @@ import 'package:day_planner/features/day_planner/models/new_date_time_status.dar
 import 'package:day_planner/features/day_planner/repositories/events_repository.dart';
 import 'package:day_planner/features/health/models/health_model.dart';
 import 'package:day_planner/features/health/models/heart_rate.dart';
+import 'package:day_planner/features/health/models/kcal.dart';
 import 'package:day_planner/features/health/models/steps.dart';
 import 'package:day_planner/features/health/services/health.dart';
 import 'package:day_planner/features/health/utils/health_extension.dart';
@@ -26,6 +27,7 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
 
   DayPlannerBloc(this._eventsRepository, this._healthService) : super(const DayPlannerState()) {
     on<AddNewEvent>(_onAddNewEvent);
+    on<UpdateEvent>(_onUpdateEvent);
     on<SetDay>(_onSetDay);
     on<ListenToDay>(_onListenToDay);
     on<ListenToCurrentDay>(_onListenToCurrentDay);
@@ -49,8 +51,22 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
         emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.error, errorMessage: ''));
         return;
       }
-      await _eventsRepository.addEvent(addEvent);
+      final docId = await _eventsRepository.addEvent(addEvent);
+      final dayEvent = DayEvent.fromAddNewEvent(addEvent, docId);
       emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.success));
+      add(FetchHealthData(eventsToFetch: [dayEvent]));
+    } catch (e) {
+      emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.error));
+    }
+  }
+
+  Future<void> _onUpdateEvent(UpdateEvent event, Emitter<DayPlannerState> emit) async {
+    try {
+      emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.loading));
+      final eventToUpdate = event.dayEvent;
+      await _eventsRepository.updateEvent(eventToUpdate);
+      emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.success));
+      add(FetchHealthData(eventsToFetch: [eventToUpdate]));
     } catch (e) {
       emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.error));
     }
@@ -122,11 +138,11 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
   // }
 
   Future<void> _onFetchHealthData(FetchHealthData event, Emitter<DayPlannerState> emit) async {
-    final currentDayEvents = _getEventsForHealthUpdate(event.onlyCurrentEvent);
+    final currentDayEvents = event.eventsToFetch ?? _getEventsForHealthUpdate(event.onlyCurrentEvent);
     for (final currEvent in currentDayEvents) {
       final healthData = await _healthService.fetchHealthData(currEvent.from, currEvent.to);
       if (healthData.isEmpty) {
-        return;
+        continue;
       }
       final healthModel = _sortHealthData(healthData);
       final date = extractTimeFromDate(currEvent.from);
@@ -146,7 +162,10 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
 
   void _onValidateNewEventDateTime(ValidateNewEventDateTime event, Emitter<DayPlannerState> emit) {
     emit(state.copyWith(newDateTimeStatus: NewDateTimeStatus.checking));
-    final events = state.dayEvents;
+    final events = [...state.dayEvents];
+    if (event.isEditMode) {
+      events.removeWhere((e) => e.docId == event.docId);
+    }
     final addEventModel = AddEventModel(
       name: 'New',
       category: 'Event',
@@ -195,6 +214,7 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
   HealthModel _sortHealthData(List<HealthDataPoint> healthData) {
     final heartRates = <HeartRate>[];
     final steps = <Steps>[];
+    final kcal = <Kcal>[];
     for (final hd in healthData) {
       if (hd.type.isSteps) {
         steps.add(Steps.fromHealthDataPoint(hd));
@@ -202,7 +222,10 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
       if (hd.type.isHeartRate) {
         heartRates.add(HeartRate.fromHealthDataPoint(hd));
       }
+      if (hd.type.isKcal) {
+        kcal.add(Kcal.fromHealthDataPoint(hd));
+      }
     }
-    return HealthModel.fromHealthData(steps, heartRates);
+    return HealthModel.fromHealthData(steps, heartRates, kcal);
   }
 }

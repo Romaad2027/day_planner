@@ -14,11 +14,13 @@ class HealthService {
   final types = [
     HealthDataType.STEPS,
     HealthDataType.HEART_RATE,
+    HealthDataType.ACTIVE_ENERGY_BURNED,
   ];
 
   static const Map<HealthDataType, HealthDataAggregateMethod> methods = {
     HealthDataType.STEPS: HealthDataAggregateMethod.sum,
     HealthDataType.HEART_RATE: HealthDataAggregateMethod.average,
+    HealthDataType.ACTIVE_ENERGY_BURNED: HealthDataAggregateMethod.sum,
   };
 
   Future<void> init() async {

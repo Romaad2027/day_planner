@@ -1,5 +1,6 @@
 import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/health/models/heart_rate.dart';
+import 'package:day_planner/features/health/models/kcal.dart';
 import 'package:day_planner/features/health/models/steps.dart';
 import 'package:intl/intl.dart';
 
@@ -80,6 +81,17 @@ int? calculateTotalSteps(List<Steps> steps) {
   return totalSteps;
 }
 
+double? calculateTotalKcal(List<Kcal> kcal) {
+  if (kcal.isEmpty) {
+    return null;
+  }
+  double totalKcal = 0;
+  for (var s in kcal) {
+    totalKcal += s.kcal;
+  }
+  return totalKcal;
+}
+
 bool isValidNewEventTime(DateTime from, DateTime to, List<DayEvent> existingEvents) {
   for (DayEvent event in existingEvents) {
     if (from.isBefore(event.to) && to.isAfter(event.from)) {
@@ -118,4 +130,8 @@ double calculateEventHeight(DayEvent event, double hourSlotHeight) {
   final toMinute = event.to.minute;
 
   return (((toHour * 60 + toMinute) - (fromHour * 60 + fromMinute)) / 60) * hourSlotHeight;
+}
+
+DateTime getOnlyDate(DateTime dateTime) {
+  return DateTime(dateTime.year, dateTime.month, dateTime.day);
 }

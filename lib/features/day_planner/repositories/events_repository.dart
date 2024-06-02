@@ -5,10 +5,11 @@ import 'package:day_planner/features/health/models/health_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 const _schedulesCollection = 'schedules';
-const _eventsCollection = 'events';
 
 abstract class EventsRepository {
-  Future<void> addEvent(AddEventModel addEvent);
+  Future<String> addEvent(AddEventModel addEvent);
+
+  Future<void> updateEvent(DayEvent eventToUpdate);
 
   Stream<QuerySnapshot<DayEvent?>> dayEventStream(String dayMilliseconds);
 
@@ -27,7 +28,7 @@ class EventsRepositoryImpl implements EventsRepository {
   const EventsRepositoryImpl(this._firebaseFirestore);
 
   @override
-  Future<void> addEvent(AddEventModel addEvent) async {
+  Future<String> addEvent(AddEventModel addEvent) async {
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
       final day = DateTime(addEvent.from.year, addEvent.from.month, addEvent.from.day);
@@ -35,7 +36,23 @@ class EventsRepositoryImpl implements EventsRepository {
       final userEventsDocRef = _firebaseFirestore.collection(_schedulesCollection).doc(uid);
 
       final dayCollection = day.millisecondsSinceEpoch.toString();
-      await userEventsDocRef.collection(dayCollection).add(addEvent.toJson());
+      final docRef = await userEventsDocRef.collection(dayCollection).add(addEvent.toJson());
+      return docRef.id;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateEvent(DayEvent eventToUpdate) async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final day = DateTime(eventToUpdate.from.year, eventToUpdate.from.month, eventToUpdate.from.day);
+
+      final userEventsDocRef = _firebaseFirestore.collection(_schedulesCollection).doc(uid);
+
+      final dayCollection = day.millisecondsSinceEpoch.toString();
+      await userEventsDocRef.collection(dayCollection).doc(eventToUpdate.docId).update(eventToUpdate.toJson());
     } catch (e) {
       rethrow;
     }

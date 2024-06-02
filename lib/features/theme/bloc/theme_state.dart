@@ -30,7 +30,7 @@ class ThemeState extends Equatable {
       case ThemeMode.dark:
         return MaterialTheme().dark();
       case ThemeMode.system:
-        return platformBrightness == Brightness.dark ? MaterialTheme().dark() : MaterialTheme().light();
+        return platformBrightness == Brightness.dark ? MaterialTheme().darkMediumContrast() : MaterialTheme().light();
     }
   }
 
