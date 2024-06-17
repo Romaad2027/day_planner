@@ -115,8 +115,9 @@ class EventsAnalyzer {
     required List<Recommendation> recommendations,
     required List<DayEvent> events,
     required List<DayEvent> allAnalysisRangeEvent,
-    required DateTime recommendationStart,
-    required DateTime recommendationEnd,
+    required TimeOfDay recommendationStart,
+    required TimeOfDay recommendationEnd,
+    required DateTime day,
   }) {
     // Проанализировать занятые часы
     List<DateTimeRange> occupiedTimeRanges = events.map((e) => DateTimeRange(start: e.from, end: e.to)).toList();
@@ -128,9 +129,7 @@ class EventsAnalyzer {
       String category = event.category;
       int hour = event.from.hour;
 
-      if (!repeatedTimeSlots.containsKey(hour)) {
-        repeatedTimeSlots[hour]!.add(RepeatedTimeSlot(category));
-      } else {
+      if (repeatedTimeSlots.containsKey(hour)) {
         final list = repeatedTimeSlots[hour]!.map((e) {
           if (e.category == category) {
             e.increment();
@@ -138,19 +137,37 @@ class EventsAnalyzer {
           return e;
         }).toList();
         repeatedTimeSlots[hour] = list;
+      } else {
+        repeatedTimeSlots[hour] = [];
+        repeatedTimeSlots[hour]!.add(RepeatedTimeSlot(category));
       }
     }
 
     List<DayEvent> newEvents = [];
 
-    DateTime currentTime = recommendationStart;
+    TimeOfDay currentTime = recommendationStart;
 
-    while (currentTime.isBefore(recommendationEnd)) {
+    bool intenseSportAdded = false;
+    while (currentTime.hour < recommendationEnd.hour) {
+      final checkDate = DateTime(
+        day.year,
+        day.month,
+        day.day,
+        currentTime.hour,
+        currentTime.minute,
+      );
       bool isOccupied =
-          occupiedTimeRanges.any((range) => currentTime.isAfter(range.start) && currentTime.isBefore(range.end));
+          occupiedTimeRanges.any((range) => checkDate.isAfter(range.start) && checkDate.isBefore(range.end));
 
       if (!isOccupied) {
         for (var rec in recommendations) {
+          final fullDate = DateTime(
+            day.year,
+            day.month,
+            day.day,
+            currentTime.hour,
+            currentTime.minute,
+          );
           String category = _getCategoryFromRecommendationType(rec.recommendationType);
 
           // Избегаем повторяющиеся временные промежутки
@@ -163,32 +180,58 @@ class EventsAnalyzer {
           double intensity = (0.7 - rec.value).clamp(0.0, 1.0);
 
           if (intensity > 0) {
-            int steps = rec.recommendationType.isSteps ? (10000 * intensity).toInt() : 0;
-            int heartRate = rec.recommendationType.isSteps ? (150 * intensity).toInt() : 0;
-            int kcal = rec.recommendationType.isKcal ? (500 * intensity).toInt() : 0;
-
             String name;
-            if (intensity > 0.6) {
+            Duration duration;
+            Duration restDuration;
+
+            if (intensity > 0.6 && !intenseSportAdded) {
               name = 'Intense $category Activity';
+              duration = Duration(hours: 1);
+              restDuration = Duration(hours: 1);
+              intenseSportAdded = true;
             } else if (intensity > 0.3) {
               name = 'Moderate $category Activity';
+              duration = Duration(hours: 1);
+              restDuration = Duration(minutes: 30);
             } else {
               name = 'Light $category Activity';
+              duration = Duration(hours: 1);
+              restDuration = Duration(minutes: 30);
             }
 
             newEvents.add(DayEvent(
               name: name,
               category: category,
-              from: currentTime,
-              to: currentTime.add(const Duration(hours: 1)),
+              from: fullDate,
+              to: fullDate.add(duration),
               healthModel: null,
               docId: '',
             ));
+
+            occupiedTimeRanges.add(DateTimeRange(start: fullDate, end: fullDate.add(duration)));
+
+            // Добавить отдых после активности
+            DateTime restStartTime = fullDate.add(duration);
+            newEvents.add(DayEvent(
+              name: 'Rest',
+              category: 'rest',
+              from: restStartTime,
+              to: restStartTime.add(restDuration),
+              healthModel: null,
+              docId: '',
+            ));
+
+            occupiedTimeRanges.add(DateTimeRange(start: restStartTime, end: restStartTime.add(restDuration)));
+            final time = restStartTime.add(restDuration);
+            currentTime = TimeOfDay(
+              hour: currentTime.hour + time.hour,
+              minute: currentTime.minute + time.minute,
+            );
           }
         }
       }
 
-      currentTime = currentTime.add(const Duration(hours: 1));
+      currentTime = TimeOfDay(hour: currentTime.hour + 1, minute: currentTime.minute);
     }
 
     return newEvents;
@@ -197,7 +240,7 @@ class EventsAnalyzer {
   String _getCategoryFromRecommendationType(RecommendationType type) {
     switch (type) {
       case RecommendationType.steps:
-        return 'sport';
+        return 'walking';
       case RecommendationType.kcal:
         return 'sport';
       case RecommendationType.sportActivity:

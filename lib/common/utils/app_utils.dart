@@ -5,21 +5,7 @@ import 'package:day_planner/features/health/models/steps.dart';
 import 'package:intl/intl.dart';
 
 import '../assets.dart';
-import '../services/credentials_loader.dart';
-import '../services/logger.dart';
 import 'app_flavor.dart';
-
-Future<Credentials> loadCredentials() async {
-  try {
-    final credentials = await CredentialsLoader(
-      pathToFile: _credentialsFileForFlavor(AppFlavor.prod),
-    ).load();
-    return credentials;
-  } catch (e) {
-    log.fine('loadCredentials error: $e');
-    rethrow;
-  }
-}
 
 String _credentialsFileForFlavor(AppFlavor flavor) {
   switch (flavor) {

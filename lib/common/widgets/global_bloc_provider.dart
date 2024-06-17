@@ -7,18 +7,13 @@ import 'package:day_planner/features/day_recomendations/bloc/day_recomendations_
 import 'package:day_planner/features/day_recomendations/repository/recommendations_repository.dart';
 import 'package:day_planner/features/health/bloc/health_bloc.dart';
 import 'package:day_planner/features/health/services/health.dart';
-import 'package:day_planner/features/posts/posts.dart';
-import 'package:day_planner/features/posts/services/posts_api_service.dart';
 import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
 import 'package:day_planner/features/profile/repositories/profile_repository.dart';
 import 'package:day_planner/features/tab_switcher/cubit/tab_switch_cubit.dart';
 import 'package:day_planner/features/theme/bloc/theme_bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
-
-import '../../network/api_client.dart';
 
 class GlobalBlocProvider extends StatelessWidget {
   const GlobalBlocProvider({
@@ -33,13 +28,6 @@ class GlobalBlocProvider extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         // Add here your BLoC/Cubits you are about to use through multiple screens
-        BlocProvider(
-          create: (context) => PostBloc(
-            postsRepository: PostsRepositoryImpl(
-              postsApiService: PostsApiServiceImpl(ApiClientImpl(dio: Dio())),
-            ),
-          ),
-        ),
         BlocProvider(
           create: (context) => ThemeBloc(Hive.box(ThemeBox.name))..add(const InitTheme()),
         ),

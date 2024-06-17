@@ -6,7 +6,6 @@ import 'package:day_planner/features/day_planner/screens/add_event_screen.dart';
 import 'package:day_planner/features/day_planner/screens/view_event_screen.dart';
 import 'package:day_planner/features/day_recomendations/screens/recommendations_screen.dart';
 import 'package:day_planner/features/main_page/screens/main_screen.dart';
-import 'package:day_planner/features/posts/posts.dart';
 import 'package:day_planner/features/profile/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -115,25 +114,6 @@ final goRouter = GoRouter(
         key: state.pageKey,
         child: const RecommendationsScreen(),
       ),
-    ),
-    GoRoute(
-      path: postsRoute,
-      pageBuilder: (context, state) => _TransitionPage(
-        key: state.pageKey,
-        child: const PostsScreen(),
-      ),
-      routes: <RouteBase>[
-        GoRoute(
-          path: pagesDynamicRoute,
-          // builder: (BuildContext context, GoRouterState state) {
-          //   return const PageWidget();
-          // },
-          pageBuilder: (context, state) => _TransitionPage(
-            key: state.pageKey,
-            child: const PageWidget(),
-          ),
-        ),
-      ],
     ),
     GoRoute(
       path: pagesRoute,

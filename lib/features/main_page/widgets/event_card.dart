@@ -37,8 +37,8 @@ class EventCard extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: SingleChildScrollView(
                   physics: const NeverScrollableScrollPhysics(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
