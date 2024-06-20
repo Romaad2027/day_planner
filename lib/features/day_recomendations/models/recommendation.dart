@@ -28,6 +28,6 @@ class Recommendation {
         recommendationMessage = 'Your indicator is at a good level. Keep up the good work!';
       }
     }
-    return 'Recommendation: $recommendationType - $recommendationMessage';
+    return 'Recommendation: ${recommendationType.toString().split('.')[1]} - $recommendationMessage';
   }
 }

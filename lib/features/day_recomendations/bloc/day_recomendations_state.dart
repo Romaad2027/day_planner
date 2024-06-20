@@ -13,6 +13,7 @@ class DayRecommendationsState extends Equatable {
   final TimeOfDay to;
 
   final GenerateEventsStatus generatedEventsStatus;
+  final RecommendationStatus recommendationStatus;
 
   final List<Recommendation> recommendations;
   final List<DayEvent> generatedDays;
@@ -23,6 +24,7 @@ class DayRecommendationsState extends Equatable {
     this.recommendations = const [],
     this.generatedDays = const [],
     this.generatedEventsStatus = GenerateEventsStatus.initial,
+    this.recommendationStatus = RecommendationStatus.initial,
     this.from = const TimeOfDay(hour: 8, minute: 0),
     this.to = const TimeOfDay(hour: 21, minute: 0),
     this.day,
@@ -32,6 +34,7 @@ class DayRecommendationsState extends Equatable {
     List<DayEvent>? fetchedEvents,
     List<DayEvent>? generatedDays,
     GenerateEventsStatus? generatedEventsStatus,
+    RecommendationStatus? recommendationStatus,
     Map<String, double>? weights,
     List<Recommendation>? recommendations,
     DateTime? day,
@@ -42,6 +45,7 @@ class DayRecommendationsState extends Equatable {
       fetchedEvents: fetchedEvents ?? this.fetchedEvents,
       generatedDays: generatedDays ?? this.generatedDays,
       generatedEventsStatus: generatedEventsStatus ?? this.generatedEventsStatus,
+      recommendationStatus: recommendationStatus ?? this.recommendationStatus,
       weights: weights ?? this.weights,
       recommendations: recommendations ?? this.recommendations,
       from: from ?? this.from,
@@ -56,6 +60,7 @@ class DayRecommendationsState extends Equatable {
         weights,
         recommendations,
         generatedEventsStatus,
+        recommendationStatus,
         from,
         to,
         day,

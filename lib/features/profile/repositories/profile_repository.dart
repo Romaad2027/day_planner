@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:day_planner/features/profile/models/health_thresholds.dart';
 import 'package:day_planner/features/profile/models/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -20,9 +21,15 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<void> addProfile(User user) async {
     try {
+      final healthThresholds = HealthThresholds(
+        steps: 65000,
+        kcal: 19000.0,
+        heartRate: 75,
+      );
       final userRec = {
         'uid': user.uid,
         'phone_number': user.phoneNumber,
+        'health_thresholds': healthThresholds.toJson(),
       };
       await _firebaseFirestore.collection(_usersCollection).add(userRec);
     } catch (e) {

@@ -21,7 +21,10 @@ class CommonTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       initialValue: initialValue,
-      decoration: InputDecoration(hintText: hintText, border: const OutlineInputBorder()),
+      decoration: InputDecoration(
+        label: Text(hintText ?? ''),
+        border: const OutlineInputBorder(),
+      ),
       enabled: isEditMode,
       validator: validator,
     );

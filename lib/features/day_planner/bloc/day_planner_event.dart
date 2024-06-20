@@ -18,6 +18,12 @@ class AddNewEvent extends DayPlannerEvent {
   });
 }
 
+class AddSeveralActivities extends DayPlannerEvent {
+  final List<DayEvent> dayEvents;
+
+  const AddSeveralActivities(this.dayEvents);
+}
+
 class UpdateEvent extends DayPlannerEvent {
   final DayEvent dayEvent;
 

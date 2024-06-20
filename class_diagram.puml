@@ -1,0 +1,1420 @@
+@startuml
+set namespaceSeparator ::
+
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::application.dart::_ApplicationState"
+
+class "day_planner::math_test.dart::ActivityRecommendation" {
+  +List<DayEvent> events
+  +Map<String, double> weights
+  +Map<String, dynamic> analyzeUserActivities()
+  +Map<String, double> normalize()
+  +double aggregateScores()
+  +List<String> recommendActivities()
+}
+
+"day_planner::network::exception.dart::APIException" <|-- "day_planner::network::exception.dart::FetchDataException"
+
+class "day_planner::network::exception.dart::BadRequestException" {
+}
+
+"day_planner::network::exception.dart::APIException" <|-- "day_planner::network::exception.dart::BadRequestException"
+
+class "day_planner::network::exception.dart::UnauthorisedException" {
+}
+
+"day_planner::network::exception.dart::APIException" <|-- "day_planner::network::exception.dart::UnauthorisedException"
+
+class "day_planner::network::exception.dart::InvalidInputException" {
+}
+
+"day_planner::network::exception.dart::APIException" <|-- "day_planner::network::exception.dart::InvalidInputException"
+
+class "day_planner::network::refresh_token::dio_token_request_retrier.dart::DioTokenRequestRetrier" {
+  -Dio _dio
+  +dynamic retryRequest()
+  -dynamic _setupHeaders()
+  +dynamic handleTokensChange()
+}
+
+"day_planner::network::refresh_token::dio_token_request_retrier.dart::DioTokenRequestRetrier" o-- "dio::src::dio.dart::Dio"
+"day_planner::common::services::secure_cache.dart::SecureStorageMixin" <|-- "day_planner::network::refresh_token::dio_token_request_retrier.dart::DioTokenRequestRetrier"
+
+class "day_planner::network::refresh_token::refresh_token_interceptor.dart::RefreshTokenInterceptor" {
+  +DioTokenRequestRetrier requestRetrier
+  +dynamic onRequest()
+  +dynamic onError()
+  -dynamic _shouldRefreshToken()
+  +dynamic retryFormDataRequest()
+}
+
+"day_planner::network::refresh_token::refresh_token_interceptor.dart::RefreshTokenInterceptor" o-- "day_planner::network::refresh_token::dio_token_request_retrier.dart::DioTokenRequestRetrier"
+"dio::src::dio_mixin.dart::Interceptor" <|-- "day_planner::network::refresh_token::refresh_token_interceptor.dart::RefreshTokenInterceptor"
+"day_planner::common::services::secure_cache.dart::SecureStorageMixin" <|-- "day_planner::network::refresh_token::refresh_token_interceptor.dart::RefreshTokenInterceptor"
+
+class "day_planner::network::retry_interceptor.dart::RetryOnConnectionChangeInterceptor" {
+  +DioConnectivityRequestRetrier requestRetrier
+  +dynamic onError()
+  +void onRequest()
+  +void onResponse()
+  -bool _shouldRetry()
+}
+
+"day_planner::network::retry_interceptor.dart::RetryOnConnectionChangeInterceptor" o-- "day_planner::network::dio_connectivity_request_retrier.dart::DioConnectivityRequestRetrier"
+"dio::src::dio_mixin.dart::Interceptor" <|-- "day_planner::network::retry_interceptor.dart::RetryOnConnectionChangeInterceptor"
+
+class "day_planner::network::dio_connectivity_request_retrier.dart::DioConnectivityRequestRetrier" {
+  +Dio dio
+  +Connectivity connectivity
+  +dynamic scheduleRequestRetry()
+}
+
+"day_planner::network::dio_connectivity_request_retrier.dart::DioConnectivityRequestRetrier" o-- "dio::src::dio.dart::Dio"
+"day_planner::network::dio_connectivity_request_retrier.dart::DioConnectivityRequestRetrier" o-- "connectivity_plus::connectivity_plus.dart::Connectivity"
+
+abstract class "day_planner::network::api_client.dart::ApiClient" {
+  +dynamic get()
+  +dynamic post()
+}
+
+class "day_planner::network::api_client.dart::ApiClientImpl" {
+  -Dio _dio
+  +Map<String, String> headers
+  +dynamic get()
+  +dynamic post()
+  +dynamic put()
+  -dynamic _setupHeaders()
+  -dynamic _response()
+}
+
+"day_planner::network::api_client.dart::ApiClientImpl" o-- "dio::src::dio.dart::Dio"
+"day_planner::network::api_client.dart::ApiClient" <|-- "day_planner::network::api_client.dart::ApiClientImpl"
+"day_planner::common::services::secure_cache.dart::SecureStorageMixin" <|-- "day_planner::network::api_client.dart::ApiClientImpl"
+
+abstract class "day_planner::features::day_planner::repositories::events_repository.dart::EventsRepository" {
+  +dynamic addEvent()
+  +dynamic updateEvent()
+  +Stream<QuerySnapshot<DayEvent?>> dayEventStream()
+  +dynamic deleteEvent()
+  +dynamic addHealthData()
+}
+
+class "day_planner::features::day_planner::repositories::events_repository.dart::EventsRepositoryImpl" {
+  -FirebaseFirestore _firebaseFirestore
+  +dynamic addEvent()
+  +dynamic updateEvent()
+  +Stream<QuerySnapshot<DayEvent?>> dayEventStream()
+  +dynamic deleteEvent()
+  +dynamic addHealthData()
+}
+
+"day_planner::features::day_planner::repositories::events_repository.dart::EventsRepositoryImpl" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+"day_planner::features::day_planner::repositories::events_repository.dart::EventsRepository" <|-- "day_planner::features::day_planner::repositories::events_repository.dart::EventsRepositoryImpl"
+
+class "day_planner::features::day_planner::models::day_event.dart::DayEvent" {
+  +String docId
+  +String name
+  +String category
+  +DateTime from
+  +DateTime to
+  +HealthModel? healthModel
+  +List<Object?> props
+  +Map<String, dynamic> toJson()
+}
+
+"day_planner::features::day_planner::models::day_event.dart::DayEvent" o-- "day_planner::features::health::models::health_model.dart::HealthModel"
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+
+class "day_planner::features::day_planner::models::add_event.dart::AddEventModel" {
+  +String name
+  +String category
+  +DateTime from
+  +DateTime to
+  +List<Object?> props
+  +Map<String, dynamic> toJson()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::day_planner::models::add_event.dart::AddEventModel"
+
+class "day_planner::features::day_planner::models::day_planner_status.dart::DayPlannerStatus" {
+  +int index
+  {static} +List<DayPlannerStatus> values
+  {static} +DayPlannerStatus initial
+  {static} +DayPlannerStatus loading
+  {static} +DayPlannerStatus success
+  {static} +DayPlannerStatus updated
+  {static} +DayPlannerStatus error
+}
+
+"day_planner::features::day_planner::models::day_planner_status.dart::DayPlannerStatus" o-- "day_planner::features::day_planner::models::day_planner_status.dart::DayPlannerStatus"
+"dart::core::Enum" <|-- "day_planner::features::day_planner::models::day_planner_status.dart::DayPlannerStatus"
+
+class "day_planner::features::day_planner::models::new_date_time_status.dart::NewDateTimeStatus" {
+  +int index
+  {static} +List<NewDateTimeStatus> values
+  {static} +NewDateTimeStatus initial
+  {static} +NewDateTimeStatus checking
+  {static} +NewDateTimeStatus success
+  {static} +NewDateTimeStatus rangeError
+  {static} +NewDateTimeStatus placedError
+}
+
+"day_planner::features::day_planner::models::new_date_time_status.dart::NewDateTimeStatus" o-- "day_planner::features::day_planner::models::new_date_time_status.dart::NewDateTimeStatus"
+"dart::core::Enum" <|-- "day_planner::features::day_planner::models::new_date_time_status.dart::NewDateTimeStatus"
+
+class "day_planner::features::day_planner::models::current_day_status.dart::CurrentDayStatus" {
+  +int index
+  {static} +List<CurrentDayStatus> values
+  {static} +CurrentDayStatus initial
+  {static} +CurrentDayStatus success
+  {static} +CurrentDayStatus error
+}
+
+"day_planner::features::day_planner::models::current_day_status.dart::CurrentDayStatus" o-- "day_planner::features::day_planner::models::current_day_status.dart::CurrentDayStatus"
+"dart::core::Enum" <|-- "day_planner::features::day_planner::models::current_day_status.dart::CurrentDayStatus"
+
+class "day_planner::features::day_planner::screens::view_event_screen.dart::ViewEventScreen" {
+  +DayEvent dayEvent
+  +State<ViewEventScreen> createState()
+}
+
+"day_planner::features::day_planner::screens::view_event_screen.dart::ViewEventScreen" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::day_planner::screens::view_event_screen.dart::ViewEventScreen"
+
+class "day_planner::features::day_planner::screens::view_event_screen.dart::_ViewEventScreenState" {
+  +DayEvent dayEvent
+  +void initState()
+  +Widget build()
+}
+
+"day_planner::features::day_planner::screens::view_event_screen.dart::_ViewEventScreenState" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::day_planner::screens::view_event_screen.dart::_ViewEventScreenState"
+
+class "day_planner::features::day_planner::screens::add_event_screen.dart::AddEventScreen" {
+  +bool isEditMode
+  +DayEvent? dayEvent
+  +State<AddEventScreen> createState()
+}
+
+"day_planner::features::day_planner::screens::add_event_screen.dart::AddEventScreen" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::day_planner::screens::add_event_screen.dart::AddEventScreen"
+
+class "day_planner::features::day_planner::screens::add_event_screen.dart::_AddEventScreenState" {
+  -String? _category
+  -TimeOfDay _from
+  -TimeOfDay _to
+  -TextEditingController _nameController
+  +bool isTimeValid
+  -String _timeErrorText
+  -GlobalKey<FormState> _formKey
+  +void initState()
+  +Widget build()
+  -void _handleAddButtonPress()
+  -Widget _timeSelect()
+  -DateTime? _formatAndValidateTime()
+  -void _dayPlannerListener()
+}
+
+"day_planner::features::day_planner::screens::add_event_screen.dart::_AddEventScreenState" o-- "flutter::src::material::time.dart::TimeOfDay"
+"day_planner::features::day_planner::screens::add_event_screen.dart::_AddEventScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"day_planner::features::day_planner::screens::add_event_screen.dart::_AddEventScreenState" o-- "flutter::src::widgets::framework.dart::GlobalKey<FormState>"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::day_planner::screens::add_event_screen.dart::_AddEventScreenState"
+
+class "day_planner::features::day_planner::screens::add_event_screen.dart::CalendarDialog" {
+  +DayEvent? editedEvent
+  +Widget build()
+}
+
+"day_planner::features::day_planner::screens::add_event_screen.dart::CalendarDialog" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::day_planner::screens::add_event_screen.dart::CalendarDialog"
+
+class "day_planner::features::day_planner::widgets::event_steps_data.dart::EventStepsData" {
+  +HealthModel healthModel
+  +State<EventStepsData> createState()
+}
+
+"day_planner::features::day_planner::widgets::event_steps_data.dart::EventStepsData" o-- "day_planner::features::health::models::health_model.dart::HealthModel"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::day_planner::widgets::event_steps_data.dart::EventStepsData"
+
+class "day_planner::features::day_planner::widgets::event_steps_data.dart::_EventStepsDataState" {
+  -bool _isExpanded
+  -int _collapseLimit
+  -void _toggleExpand()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::day_planner::widgets::event_steps_data.dart::_EventStepsDataState"
+
+class "day_planner::features::day_planner::widgets::time_range_input.dart::TimeRangeInput" {
+  +TimeOfDay? from
+  +TimeOfDay? to
+  +String? editedDocId
+  +_TimeRangeInputState createState()
+}
+
+"day_planner::features::day_planner::widgets::time_range_input.dart::TimeRangeInput" o-- "flutter::src::material::time.dart::TimeOfDay"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::day_planner::widgets::time_range_input.dart::TimeRangeInput"
+
+class "day_planner::features::day_planner::widgets::time_range_input.dart::_TimeRangeInputState" {
+  -TextEditingController _startTimeController
+  -TextEditingController _endTimeController
+  -Timer? _debounceTimer
+  +void initState()
+  -void _handleTimeChange()
+  -void _triggerFunction()
+  +DateTime? parseDateTime()
+  +void dispose()
+  +Widget build()
+}
+
+"day_planner::features::day_planner::widgets::time_range_input.dart::_TimeRangeInputState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"day_planner::features::day_planner::widgets::time_range_input.dart::_TimeRangeInputState" o-- "dart::async::Timer"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::day_planner::widgets::time_range_input.dart::_TimeRangeInputState"
+
+class "day_planner::features::day_planner::widgets::time_range_input.dart::TimeInputFormatter" {
+  +TextEditingValue formatEditUpdate()
+}
+
+"flutter::src::services::text_formatter.dart::TextInputFormatter" <|-- "day_planner::features::day_planner::widgets::time_range_input.dart::TimeInputFormatter"
+
+class "day_planner::features::day_planner::widgets::event_heart_rate_data.dart::EventHeartRateData" {
+  +HealthModel healthModel
+  +State<EventHeartRateData> createState()
+}
+
+"day_planner::features::day_planner::widgets::event_heart_rate_data.dart::EventHeartRateData" o-- "day_planner::features::health::models::health_model.dart::HealthModel"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::day_planner::widgets::event_heart_rate_data.dart::EventHeartRateData"
+
+class "day_planner::features::day_planner::widgets::event_heart_rate_data.dart::_EventHeartRateDataState" {
+  -bool _isExpanded
+  -int _collapseLimit
+  -void _toggleExpand()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::day_planner::widgets::event_heart_rate_data.dart::_EventHeartRateDataState"
+
+class "day_planner::features::day_planner::widgets::data_container.dart::DataContainer" {
+  +Widget child
+  +Widget build()
+}
+
+"day_planner::features::day_planner::widgets::data_container.dart::DataContainer" o-- "flutter::src::widgets::framework.dart::Widget"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::day_planner::widgets::data_container.dart::DataContainer"
+
+class "day_planner::features::day_planner::widgets::event_kcal_data.dart::EventKcalData" {
+  +HealthModel healthModel
+  +Widget build()
+}
+
+"day_planner::features::day_planner::widgets::event_kcal_data.dart::EventKcalData" o-- "day_planner::features::health::models::health_model.dart::HealthModel"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::day_planner::widgets::event_kcal_data.dart::EventKcalData"
+
+abstract class "day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" {
+}
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::AddNewEvent" {
+  +String name
+  +String category
+  +DateTime from
+  +DateTime to
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::AddNewEvent"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::UpdateEvent" {
+  +DayEvent dayEvent
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::UpdateEvent" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::UpdateEvent"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::SetDay" {
+  +DateTime day
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::SetDay"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::ListenToDay" {
+  +DateTime day
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::ListenToDay"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::ListenToCurrentDay" {
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::ListenToCurrentDay"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::DeleteEvent" {
+  +String docId
+  +DateTime day
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::DeleteEvent"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::FetchHealthData" {
+  +bool onlyCurrentEvent
+  +List<DayEvent>? eventsToFetch
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::FetchHealthData"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::StartTimer" {
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::StartTimer"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::ValidateNewEventDateTime" {
+  +DateTime from
+  +DateTime to
+  +String? docId
+  +bool isEditMode
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::ValidateNewEventDateTime"
+
+class "day_planner::features::day_planner::bloc::day_planner_event.dart::ClearAddStatus" {
+}
+
+"day_planner::features::day_planner::bloc::day_planner_event.dart::DayPlannerEvent" <|-- "day_planner::features::day_planner::bloc::day_planner_event.dart::ClearAddStatus"
+
+class "day_planner::features::day_planner::bloc::day_planner_state.dart::DayPlannerState" {
+  +DayPlannerStatus dayPlannerStatus
+  +CurrentDayStatus currentDayStatus
+  +DateTime? day
+  +AddEventModel? addEventModel
+  +List<DayEvent> dayEvents
+  +List<DayEvent> currentDayEvents
+  +String? errorMessage
+  +NewDateTimeStatus newDateTimeStatus
+  +List<Object?> props
+  +DayPlannerState copyWith()
+}
+
+"day_planner::features::day_planner::bloc::day_planner_state.dart::DayPlannerState" o-- "day_planner::features::day_planner::models::day_planner_status.dart::DayPlannerStatus"
+"day_planner::features::day_planner::bloc::day_planner_state.dart::DayPlannerState" o-- "day_planner::features::day_planner::models::current_day_status.dart::CurrentDayStatus"
+"day_planner::features::day_planner::bloc::day_planner_state.dart::DayPlannerState" o-- "day_planner::features::day_planner::models::add_event.dart::AddEventModel"
+"day_planner::features::day_planner::bloc::day_planner_state.dart::DayPlannerState" o-- "day_planner::features::day_planner::models::new_date_time_status.dart::NewDateTimeStatus"
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::day_planner::bloc::day_planner_state.dart::DayPlannerState"
+
+class "day_planner::features::day_planner::bloc::day_planner_bloc.dart::DayPlannerBloc" {
+  -EventsRepository _eventsRepository
+  -HealthService _healthService
+  -Timer _timer
+  -dynamic _onAddNewEvent()
+  -dynamic _onUpdateEvent()
+  -void _onSetDay()
+  -dynamic _onListenToCurrentDay()
+  -dynamic _onListenToDay()
+  -dynamic _onDeleteEvent()
+  -dynamic _onFetchHealthData()
+  -void _onStartTimer()
+  -void _onValidateNewEventDateTime()
+  -void _onClearAddStatus()
+  -List<DayEvent> _getEventsForHealthUpdate()
+  -DayEvent? _getCurrentEvent()
+  -HealthModel _sortHealthData()
+}
+
+"day_planner::features::day_planner::bloc::day_planner_bloc.dart::DayPlannerBloc" o-- "day_planner::features::day_planner::repositories::events_repository.dart::EventsRepository"
+"day_planner::features::day_planner::bloc::day_planner_bloc.dart::DayPlannerBloc" o-- "day_planner::features::health::services::health.dart::HealthService"
+"day_planner::features::day_planner::bloc::day_planner_bloc.dart::DayPlannerBloc" o-- "dart::async::Timer"
+"bloc::src::bloc.dart::Bloc" <|-- "day_planner::features::day_planner::bloc::day_planner_bloc.dart::DayPlannerBloc"
+
+class "day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabsSwitchCubit" {
+  +void setTab()
+}
+
+"bloc::src::cubit.dart::Cubit" <|-- "day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabsSwitchCubit"
+
+class "day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabsSwitchState" {
+  +TabScreen tab
+  +String toString()
+}
+
+"day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabsSwitchState" o-- "day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabScreen"
+
+class "day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabScreen" {
+  +int index
+  {static} +List<TabScreen> values
+  {static} +TabScreen main
+  {static} +TabScreen profile
+}
+
+"day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabScreen" o-- "day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabScreen"
+"dart::core::Enum" <|-- "day_planner::features::tab_switcher::cubit::tab_switch_cubit.dart::TabScreen"
+
+abstract class "day_planner::features::auth::repositories::auth_repository.dart::AuthRepository" {
+  +dynamic verifyPhoneNumber()
+  +dynamic signInWithSmsCode()
+  +dynamic logOut()
+}
+
+class "day_planner::features::auth::repositories::auth_repository.dart::AuthRepositoryImpl" {
+  +AuthService authService
+  +dynamic verifyPhoneNumber()
+  +dynamic signInWithSmsCode()
+  +dynamic logOut()
+}
+
+"day_planner::features::auth::repositories::auth_repository.dart::AuthRepositoryImpl" o-- "day_planner::features::auth::services::auth_service.dart::AuthService"
+"day_planner::features::auth::repositories::auth_repository.dart::AuthRepository" <|-- "day_planner::features::auth::repositories::auth_repository.dart::AuthRepositoryImpl"
+
+class "day_planner::features::auth::screens::phone_verification_screen.dart::PhoneVerificationScreen" {
+  +State<PhoneVerificationScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::auth::screens::phone_verification_screen.dart::PhoneVerificationScreen"
+
+class "day_planner::features::auth::screens::phone_verification_screen.dart::_PhoneVerificationScreenState" {
+  -TextEditingController _controller
+  +FocusNode focusNode
+  +Widget build()
+  -void _loginListener()
+}
+
+"day_planner::features::auth::screens::phone_verification_screen.dart::_PhoneVerificationScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"day_planner::features::auth::screens::phone_verification_screen.dart::_PhoneVerificationScreenState" o-- "flutter::src::widgets::focus_manager.dart::FocusNode"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::auth::screens::phone_verification_screen.dart::_PhoneVerificationScreenState"
+
+class "day_planner::features::auth::screens::auth_screen.dart::AuthScreen" {
+  +State<AuthScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::auth::screens::auth_screen.dart::AuthScreen"
+
+class "day_planner::features::auth::screens::auth_screen.dart::_AuthScreenState" {
+  -TextEditingController _controller
+  -PhoneNumber? _phoneNumber
+  -bool _isPhoneNumberValid
+  +Widget build()
+  -void _handlePhoneNumber()
+  +bool isValid()
+  -void _authListener()
+}
+
+"day_planner::features::auth::screens::auth_screen.dart::_AuthScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"day_planner::features::auth::screens::auth_screen.dart::_AuthScreenState" o-- "intl_phone_number_input::src::utils::phone_number.dart::PhoneNumber"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::auth::screens::auth_screen.dart::_AuthScreenState"
+
+class "day_planner::features::auth::services::auth_service.dart::AuthService" {
+  -FirebaseAuth _firebaseAuth
+  +dynamic verifyPhoneNumber()
+  +dynamic signInWithSmsCode()
+  +dynamic logOut()
+}
+
+"day_planner::features::auth::services::auth_service.dart::AuthService" o-- "firebase_auth::firebase_auth.dart::FirebaseAuth"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::AuthBloc" {
+  -AuthRepository _authRepository
+  -dynamic _onVerifyPhoneNumber()
+  -void _onSignInWithPhoneNumberFailed()
+  -dynamic _onUpdatePhoneToken()
+  -dynamic _onSignInWithSmsCode()
+  -dynamic _onLogOut()
+  -void _onSetAuthStatus()
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthBloc" o-- "day_planner::features::auth::repositories::auth_repository.dart::AuthRepository"
+"bloc::src::bloc.dart::Bloc" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::AuthBloc"
+
+abstract class "day_planner::features::auth::bloc::auth_bloc.dart::AuthEvent" {
+}
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::VerifyPhoneNumber" {
+  +PhoneNumber phoneNumber
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::VerifyPhoneNumber" o-- "intl_phone_number_input::src::utils::phone_number.dart::PhoneNumber"
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthEvent" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::VerifyPhoneNumber"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::UpdatePhoneToken" {
+  +String verificationId
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthEvent" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::UpdatePhoneToken"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::SignInWithSmsCode" {
+  +String smsCode
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthEvent" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::SignInWithSmsCode"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::SignInWithPhoneNumberFailed" {
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthEvent" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::SignInWithPhoneNumberFailed"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::SetAuthStatus" {
+  +AuthStatus status
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::SetAuthStatus" o-- "day_planner::features::auth::bloc::auth_bloc.dart::AuthStatus"
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthEvent" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::SetAuthStatus"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::LogOut" {
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthEvent" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::LogOut"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::AuthState" {
+  +String? phoneNumber
+  +String verificationId
+  +LoginStatus loginStatus
+  +AuthStatus authStatus
+  +bool isNewUser
+  +List<Object?> props
+  +AuthState copyWith()
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthState" o-- "day_planner::features::auth::bloc::auth_bloc.dart::LoginStatus"
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthState" o-- "day_planner::features::auth::bloc::auth_bloc.dart::AuthStatus"
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::AuthState"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::LoginStatus" {
+  +int index
+  {static} +List<LoginStatus> values
+  {static} +LoginStatus initial
+  {static} +LoginStatus error
+  {static} +LoginStatus success
+  {static} +LoginStatus loading
+  {static} +LoginStatus codeSent
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::LoginStatus" o-- "day_planner::features::auth::bloc::auth_bloc.dart::LoginStatus"
+"dart::core::Enum" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::LoginStatus"
+
+class "day_planner::features::auth::bloc::auth_bloc.dart::AuthStatus" {
+  +int index
+  {static} +List<AuthStatus> values
+  {static} +AuthStatus loggedIn
+  {static} +AuthStatus loggedOut
+}
+
+"day_planner::features::auth::bloc::auth_bloc.dart::AuthStatus" o-- "day_planner::features::auth::bloc::auth_bloc.dart::AuthStatus"
+"dart::core::Enum" <|-- "day_planner::features::auth::bloc::auth_bloc.dart::AuthStatus"
+
+class "day_planner::features::health::models::kcal.dart::Kcal" {
+  +double kcal
+  +DateTime dateTime
+  +List<Object?> props
+  +Map<String, dynamic> toJson()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::health::models::kcal.dart::Kcal"
+
+class "day_planner::features::health::models::steps.dart::Steps" {
+  +int steps
+  +DateTime dateTime
+  +List<Object?> props
+  +Map<String, dynamic> toJson()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::health::models::steps.dart::Steps"
+
+class "day_planner::features::health::models::health_model.dart::HealthModel" {
+  +List<Steps>? steps
+  +List<HeartRate>? heartRate
+  +List<Kcal>? kcal
+  +int? bloodPressure
+  +int? totalSteps
+  +int? averageHeartRate
+  +double? totalKcal
+  +List<Object?> props
+  +Map<String, dynamic> toJson()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::health::models::health_model.dart::HealthModel"
+
+class "day_planner::features::health::models::heart_rate.dart::HeartRate" {
+  +int heartRate
+  +DateTime dateTime
+  +List<Object?> props
+  +Map<String, dynamic> toJson()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::health::models::heart_rate.dart::HeartRate"
+
+class "day_planner::features::health::services::health.dart::HealthService" {
+  -Health _health
+  +List<HealthDataType> types
+  {static} +Map<HealthDataType, HealthDataAggregateMethod> methods
+  +dynamic init()
+  +dynamic requestPermission()
+  +dynamic fetchHealthData()
+}
+
+"day_planner::features::health::services::health.dart::HealthService" o-- "health::health.dart::Health"
+
+class "day_planner::features::health::services::health.dart::HealthDataAggregateMethod" {
+  +int index
+  {static} +List<HealthDataAggregateMethod> values
+  {static} +HealthDataAggregateMethod sum
+  {static} +HealthDataAggregateMethod average
+}
+
+"day_planner::features::health::services::health.dart::HealthDataAggregateMethod" o-- "day_planner::features::health::services::health.dart::HealthDataAggregateMethod"
+"dart::core::Enum" <|-- "day_planner::features::health::services::health.dart::HealthDataAggregateMethod"
+
+class "day_planner::features::health::bloc::health_bloc.dart::HealthBloc" {
+  -HealthService _healthService
+  -dynamic _onInitHealth()
+}
+
+"day_planner::features::health::bloc::health_bloc.dart::HealthBloc" o-- "day_planner::features::health::services::health.dart::HealthService"
+"bloc::src::bloc.dart::Bloc" <|-- "day_planner::features::health::bloc::health_bloc.dart::HealthBloc"
+
+abstract class "day_planner::features::health::bloc::health_bloc.dart::HealthEvent" {
+}
+
+class "day_planner::features::health::bloc::health_bloc.dart::InitHealth" {
+}
+
+"day_planner::features::health::bloc::health_bloc.dart::HealthEvent" <|-- "day_planner::features::health::bloc::health_bloc.dart::InitHealth"
+
+class "day_planner::features::health::bloc::health_bloc.dart::HealthState" {
+  +HealthInitStatus healthInitStatus
+  +List<Object?> props
+  +HealthState copyWith()
+}
+
+"day_planner::features::health::bloc::health_bloc.dart::HealthState" o-- "day_planner::features::health::bloc::health_bloc.dart::HealthInitStatus"
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::health::bloc::health_bloc.dart::HealthState"
+
+class "day_planner::features::health::bloc::health_bloc.dart::HealthInitStatus" {
+  +int index
+  {static} +List<HealthInitStatus> values
+  {static} +HealthInitStatus initial
+  {static} +HealthInitStatus loading
+  {static} +HealthInitStatus success
+  {static} +HealthInitStatus declined
+  {static} +HealthInitStatus error
+}
+
+"day_planner::features::health::bloc::health_bloc.dart::HealthInitStatus" o-- "day_planner::features::health::bloc::health_bloc.dart::HealthInitStatus"
+"dart::core::Enum" <|-- "day_planner::features::health::bloc::health_bloc.dart::HealthInitStatus"
+
+abstract class "day_planner::features::profile::repositories::profile_repository.dart::ProfileRepository" {
+  +dynamic addProfile()
+  +Query<UserProfile> fetchUser()
+  +dynamic updateUser()
+}
+
+class "day_planner::features::profile::repositories::profile_repository.dart::ProfileRepositoryImpl" {
+  -FirebaseFirestore _firebaseFirestore
+  +dynamic addProfile()
+  +Query<UserProfile> fetchUser()
+  +dynamic updateUser()
+}
+
+"day_planner::features::profile::repositories::profile_repository.dart::ProfileRepositoryImpl" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+"day_planner::features::profile::repositories::profile_repository.dart::ProfileRepository" <|-- "day_planner::features::profile::repositories::profile_repository.dart::ProfileRepositoryImpl"
+
+class "day_planner::features::profile::models::user_profile.dart::UserProfile" {
+  +String uid
+  +String name
+  +String phoneNumber
+  +List<Object?> props
+  +Map<String, dynamic> toJson()
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::profile::models::user_profile.dart::UserProfile"
+
+class "day_planner::features::profile::screens::profile_screen.dart::ProfileScreen" {
+  +State<ProfileScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::profile::screens::profile_screen.dart::ProfileScreen"
+
+class "day_planner::features::profile::screens::profile_screen.dart::_ProfileScreenState" {
+  -TextEditingController _nameController
+  -bool _isEditMode
+  +Widget build()
+  -void _profileListener()
+}
+
+"day_planner::features::profile::screens::profile_screen.dart::_ProfileScreenState" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::profile::screens::profile_screen.dart::_ProfileScreenState"
+
+class "day_planner::features::profile::bloc::profile_state.dart::ProfileState" {
+  +UserProfile? userProfile
+  +ProfileStatus profileStatus
+  +List<Object?> props
+  +ProfileState copyWith()
+}
+
+"day_planner::features::profile::bloc::profile_state.dart::ProfileState" o-- "day_planner::features::profile::models::user_profile.dart::UserProfile"
+"day_planner::features::profile::bloc::profile_state.dart::ProfileState" o-- "day_planner::features::profile::bloc::profile_state.dart::ProfileStatus"
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::profile::bloc::profile_state.dart::ProfileState"
+
+class "day_planner::features::profile::bloc::profile_state.dart::ProfileStatus" {
+  +int index
+  {static} +List<ProfileStatus> values
+  {static} +ProfileStatus initial
+  {static} +ProfileStatus loading
+  {static} +ProfileStatus success
+  {static} +ProfileStatus error
+}
+
+"day_planner::features::profile::bloc::profile_state.dart::ProfileStatus" o-- "day_planner::features::profile::bloc::profile_state.dart::ProfileStatus"
+"dart::core::Enum" <|-- "day_planner::features::profile::bloc::profile_state.dart::ProfileStatus"
+
+class "day_planner::features::profile::bloc::profile_bloc.dart::ProfileBloc" {
+  -ProfileRepository _profileRepository
+  -dynamic _onAddUser()
+  -void _onListenToUser()
+  -void _onFetchUser()
+  -void _onUpdateUser()
+}
+
+"day_planner::features::profile::bloc::profile_bloc.dart::ProfileBloc" o-- "day_planner::features::profile::repositories::profile_repository.dart::ProfileRepository"
+"bloc::src::bloc.dart::Bloc" <|-- "day_planner::features::profile::bloc::profile_bloc.dart::ProfileBloc"
+
+class "day_planner::features::profile::bloc::profile_event.dart::ProfileEvent" {
+}
+
+class "day_planner::features::profile::bloc::profile_event.dart::AddUser" {
+  +User user
+}
+
+"day_planner::features::profile::bloc::profile_event.dart::AddUser" o-- "firebase_auth::firebase_auth.dart::User"
+"day_planner::features::profile::bloc::profile_event.dart::ProfileEvent" <|-- "day_planner::features::profile::bloc::profile_event.dart::AddUser"
+
+class "day_planner::features::profile::bloc::profile_event.dart::ListenToUser" {
+}
+
+"day_planner::features::profile::bloc::profile_event.dart::ProfileEvent" <|-- "day_planner::features::profile::bloc::profile_event.dart::ListenToUser"
+
+class "day_planner::features::profile::bloc::profile_event.dart::FetchUser" {
+  +UserProfile userProfile
+}
+
+"day_planner::features::profile::bloc::profile_event.dart::FetchUser" o-- "day_planner::features::profile::models::user_profile.dart::UserProfile"
+"day_planner::features::profile::bloc::profile_event.dart::ProfileEvent" <|-- "day_planner::features::profile::bloc::profile_event.dart::FetchUser"
+
+class "day_planner::features::profile::bloc::profile_event.dart::UpdateUser" {
+  +String? name
+}
+
+"day_planner::features::profile::bloc::profile_event.dart::ProfileEvent" <|-- "day_planner::features::profile::bloc::profile_event.dart::UpdateUser"
+
+class "day_planner::features::theme::theme_info.dart::TextStyles" {
+  {static} +TextStyle notifierTextLabel
+}
+
+"day_planner::features::theme::theme_info.dart::TextStyles" o-- "flutter::src::painting::text_style.dart::TextStyle"
+
+class "day_planner::features::theme::theme_info.dart::MaterialTheme" {
+  +TextTheme textTheme
+  +List<ExtendedColor> extendedColors
+  {static} +MaterialScheme lightScheme()
+  +ThemeData light()
+  {static} +MaterialScheme lightMediumContrastScheme()
+  +ThemeData lightMediumContrast()
+  {static} +MaterialScheme lightHighContrastScheme()
+  +ThemeData lightHighContrast()
+  {static} +MaterialScheme darkScheme()
+  +ThemeData dark()
+  {static} +MaterialScheme darkMediumContrastScheme()
+  +ThemeData darkMediumContrast()
+  {static} +MaterialScheme darkHighContrastScheme()
+  +ThemeData darkHighContrast()
+  +ThemeData theme()
+}
+
+"day_planner::features::theme::theme_info.dart::MaterialTheme" o-- "flutter::src::material::text_theme.dart::TextTheme"
+
+class "day_planner::features::theme::theme_info.dart::MaterialScheme" {
+  +Brightness brightness
+  +Color primary
+  +Color surfaceTint
+  +Color onPrimary
+  +Color primaryContainer
+  +Color onPrimaryContainer
+  +Color secondary
+  +Color onSecondary
+  +Color secondaryContainer
+  +Color onSecondaryContainer
+  +Color tertiary
+  +Color onTertiary
+  +Color tertiaryContainer
+  +Color onTertiaryContainer
+  +Color error
+  +Color onError
+  +Color errorContainer
+  +Color onErrorContainer
+  +Color background
+  +Color onBackground
+  +Color surface
+  +Color onSurface
+  +Color surfaceVariant
+  +Color onSurfaceVariant
+  +Color outline
+  +Color outlineVariant
+  +Color shadow
+  +Color scrim
+  +Color inverseSurface
+  +Color inverseOnSurface
+  +Color inversePrimary
+  +Color primaryFixed
+  +Color onPrimaryFixed
+  +Color primaryFixedDim
+  +Color onPrimaryFixedVariant
+  +Color secondaryFixed
+  +Color onSecondaryFixed
+  +Color secondaryFixedDim
+  +Color onSecondaryFixedVariant
+  +Color tertiaryFixed
+  +Color onTertiaryFixed
+  +Color tertiaryFixedDim
+  +Color onTertiaryFixedVariant
+  +Color surfaceDim
+  +Color surfaceBright
+  +Color surfaceContainerLowest
+  +Color surfaceContainerLow
+  +Color surfaceContainer
+  +Color surfaceContainerHigh
+  +Color surfaceContainerHighest
+}
+
+"day_planner::features::theme::theme_info.dart::MaterialScheme" o-- "dart::ui::Brightness"
+"day_planner::features::theme::theme_info.dart::MaterialScheme" o-- "dart::ui::Color"
+
+class "day_planner::features::theme::theme_info.dart::ExtendedColor" {
+  +Color seed
+  +Color value
+  +ColorFamily light
+  +ColorFamily lightHighContrast
+  +ColorFamily lightMediumContrast
+  +ColorFamily dark
+  +ColorFamily darkHighContrast
+  +ColorFamily darkMediumContrast
+}
+
+"day_planner::features::theme::theme_info.dart::ExtendedColor" o-- "dart::ui::Color"
+"day_planner::features::theme::theme_info.dart::ExtendedColor" o-- "day_planner::features::theme::theme_info.dart::ColorFamily"
+
+class "day_planner::features::theme::theme_info.dart::ColorFamily" {
+  +Color color
+  +Color onColor
+  +Color colorContainer
+  +Color onColorContainer
+}
+
+"day_planner::features::theme::theme_info.dart::ColorFamily" o-- "dart::ui::Color"
+
+class "day_planner::features::theme::bloc::theme_bloc.dart::ThemeBloc" {
+  -Box<dynamic> _themeBox
+  +void switchTheme()
+}
+
+"day_planner::features::theme::bloc::theme_bloc.dart::ThemeBloc" o-- "hive::hive.dart::Box<dynamic>"
+"bloc::src::bloc.dart::Bloc" <|-- "day_planner::features::theme::bloc::theme_bloc.dart::ThemeBloc"
+
+abstract class "day_planner::features::theme::bloc::theme_bloc.dart::ThemeEvent" {
+  +List<Object> props
+}
+
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::theme::bloc::theme_bloc.dart::ThemeEvent"
+
+class "day_planner::features::theme::bloc::theme_bloc.dart::SetTheme" {
+  +ThemeMode themeMode
+  +List<Object> props
+}
+
+"day_planner::features::theme::bloc::theme_bloc.dart::SetTheme" o-- "flutter::src::material::app.dart::ThemeMode"
+"day_planner::features::theme::bloc::theme_bloc.dart::ThemeEvent" <|-- "day_planner::features::theme::bloc::theme_bloc.dart::SetTheme"
+
+class "day_planner::features::theme::bloc::theme_bloc.dart::InitTheme" {
+  +List<Object> props
+}
+
+"day_planner::features::theme::bloc::theme_bloc.dart::ThemeEvent" <|-- "day_planner::features::theme::bloc::theme_bloc.dart::InitTheme"
+
+class "day_planner::features::theme::bloc::theme_bloc.dart::ThemeState" {
+  +ThemeMode themeMode
+  +List<Object> props
+  +ThemeState copyWith()
+  +ThemeData getThemeData()
+}
+
+"day_planner::features::theme::bloc::theme_bloc.dart::ThemeState" o-- "flutter::src::material::app.dart::ThemeMode"
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::theme::bloc::theme_bloc.dart::ThemeState"
+
+class "day_planner::features::main_page::screens::main_screen.dart::MainScreen" {
+  +State<MainScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::main_page::screens::main_screen.dart::MainScreen"
+
+class "day_planner::features::main_page::screens::main_screen.dart::_MainScreenState" {
+  -bool _isFabOpened
+  -String? _showType
+  +Widget build()
+  -Widget _offsetPopup()
+  -void _dayPlannerListener()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::main_page::screens::main_screen.dart::_MainScreenState"
+
+class "day_planner::features::main_page::widgets::calendar.dart::Calendar" {
+  +State<Calendar> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::main_page::widgets::calendar.dart::Calendar"
+
+class "day_planner::features::main_page::widgets::calendar.dart::_CalendarState" {
+  -DateTime _currentDay
+  -DateTime _focusedDay
+  -CalendarFormat _calendarFormat
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::calendar.dart::_CalendarState" o-- "table_calendar::src::shared::utils.dart::CalendarFormat"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::main_page::widgets::calendar.dart::_CalendarState"
+
+class "day_planner::features::main_page::widgets::daily_list.dart::DailyList" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::daily_list.dart::DailyList"
+
+class "day_planner::features::main_page::widgets::event_card.dart::EventCard" {
+  +DayEvent event
+  +Color? cardColor
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::event_card.dart::EventCard" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"day_planner::features::main_page::widgets::event_card.dart::EventCard" o-- "dart::ui::Color"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::event_card.dart::EventCard"
+
+class "day_planner::features::main_page::widgets::schedule_list.dart::ScheduleViewWrapper" {
+  +AddEventModel? addNewEvent
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::schedule_list.dart::ScheduleViewWrapper" o-- "day_planner::features::day_planner::models::add_event.dart::AddEventModel"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::schedule_list.dart::ScheduleViewWrapper"
+
+class "day_planner::features::main_page::widgets::schedule_list.dart::ScheduleManageEventView" {
+  +AddEventModel? addNewEvent
+  +List<DayEvent> dayEvents
+  +DateTime? day
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::schedule_list.dart::ScheduleManageEventView" o-- "day_planner::features::day_planner::models::add_event.dart::AddEventModel"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::schedule_list.dart::ScheduleManageEventView"
+
+class "day_planner::features::main_page::widgets::schedule_list.dart::ScheduleView" {
+  +AddEventModel? addNewEvent
+  +List<DayEvent> events
+  +DateTime? day
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::schedule_list.dart::ScheduleView" o-- "day_planner::features::day_planner::models::add_event.dart::AddEventModel"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::schedule_list.dart::ScheduleView"
+
+class "day_planner::features::main_page::widgets::schedule_list.dart::TimeSlotRow" {
+  +TimeOfDay time
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::schedule_list.dart::TimeSlotRow" o-- "flutter::src::material::time.dart::TimeOfDay"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::schedule_list.dart::TimeSlotRow"
+
+class "day_planner::features::main_page::widgets::schedule_list.dart::TimeLine" {
+  +State<TimeLine> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::main_page::widgets::schedule_list.dart::TimeLine"
+
+class "day_planner::features::main_page::widgets::schedule_list.dart::_TimeLineState" {
+  +int nowHour
+  +int nowMinute
+  -Timer _timeTimer
+  +void initState()
+  +void dispose()
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::schedule_list.dart::_TimeLineState" o-- "dart::async::Timer"
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::main_page::widgets::schedule_list.dart::_TimeLineState"
+
+class "day_planner::features::main_page::widgets::schedule_list.dart::PositionedEventCard" {
+  +DayEvent event
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::schedule_list.dart::PositionedEventCard" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::schedule_list.dart::PositionedEventCard"
+
+class "day_planner::features::main_page::widgets::event_tile.dart::EventTile" {
+  +bool isCurrEvent
+  +DayEvent dayEvent
+  +Widget build()
+}
+
+"day_planner::features::main_page::widgets::event_tile.dart::EventTile" o-- "day_planner::features::day_planner::models::day_event.dart::DayEvent"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::features::main_page::widgets::event_tile.dart::EventTile"
+
+abstract class "day_planner::features::day_recomendations::repository::recommendations_repository.dart::RecommendationsRepository" {
+  +dynamic rangeHealthData()
+}
+
+class "day_planner::features::day_recomendations::repository::recommendations_repository.dart::RecommendationsRepositoryImpl" {
+  -FirebaseFirestore _firebaseFirestore
+  +dynamic rangeHealthData()
+}
+
+"day_planner::features::day_recomendations::repository::recommendations_repository.dart::RecommendationsRepositoryImpl" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+"day_planner::features::day_recomendations::repository::recommendations_repository.dart::RecommendationsRepository" <|-- "day_planner::features::day_recomendations::repository::recommendations_repository.dart::RecommendationsRepositoryImpl"
+
+class "day_planner::features::day_recomendations::models::recommendation.dart::Recommendation" {
+  +RecommendationType recommendationType
+  +bool isPositive
+  +double value
+  +String toString()
+}
+
+"day_planner::features::day_recomendations::models::recommendation.dart::Recommendation" o-- "day_planner::features::day_recomendations::models::recommendation_type.dart::RecommendationType"
+
+class "day_planner::features::day_recomendations::models::repeated_time_slot.dart::RepeatedTimeSlot" {
+  +String category
+  +int count
+  +void increment()
+}
+
+class "day_planner::features::day_recomendations::models::recommendation_type.dart::RecommendationType" {
+  +int index
+  {static} +List<RecommendationType> values
+  {static} +RecommendationType steps
+  {static} +RecommendationType kcal
+  {static} +RecommendationType sportActivity
+}
+
+"day_planner::features::day_recomendations::models::recommendation_type.dart::RecommendationType" o-- "day_planner::features::day_recomendations::models::recommendation_type.dart::RecommendationType"
+"dart::core::Enum" <|-- "day_planner::features::day_recomendations::models::recommendation_type.dart::RecommendationType"
+
+class "day_planner::features::day_recomendations::models::generated_events_status.dart::GenerateEventsStatus" {
+  +int index
+  {static} +List<GenerateEventsStatus> values
+  {static} +GenerateEventsStatus initial
+  {static} +GenerateEventsStatus generating
+  {static} +GenerateEventsStatus loading
+  {static} +GenerateEventsStatus error
+}
+
+"day_planner::features::day_recomendations::models::generated_events_status.dart::GenerateEventsStatus" o-- "day_planner::features::day_recomendations::models::generated_events_status.dart::GenerateEventsStatus"
+"dart::core::Enum" <|-- "day_planner::features::day_recomendations::models::generated_events_status.dart::GenerateEventsStatus"
+
+class "day_planner::features::day_recomendations::screens::recommendations_screen.dart::RecommendationsScreen" {
+  +State<RecommendationsScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::features::day_recomendations::screens::recommendations_screen.dart::RecommendationsScreen"
+
+class "day_planner::features::day_recomendations::screens::recommendations_screen.dart::_RecommendationsScreenState" {
+  +void initState()
+  +Widget build()
+  -void _listener()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::features::day_recomendations::screens::recommendations_screen.dart::_RecommendationsScreenState"
+
+class "day_planner::features::day_recomendations::services::events_analyzer.dart::EventsAnalyzer" {
+  +Map<String, dynamic> analyzeUserActivities()
+  +double normalizeValue()
+  +Map<String, double> normalize()
+  +double aggregateScores()
+  +List<Recommendation> recommendActivities()
+  +List<DayEvent> createActivities()
+  -String _getCategoryFromRecommendationType()
+}
+
+class "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::DayRecommendationsEvent" {
+}
+
+class "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::FetchEventsForRange" {
+  +DateTime from
+  +DateTime to
+}
+
+"day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::DayRecommendationsEvent" <|-- "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::FetchEventsForRange"
+
+class "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::AnalyzeRecommendations" {
+}
+
+"day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::DayRecommendationsEvent" <|-- "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::AnalyzeRecommendations"
+
+class "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::CreateActivities" {
+  +List<DayEvent> dayEvents
+}
+
+"day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::DayRecommendationsEvent" <|-- "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::CreateActivities"
+
+class "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::SetRange" {
+  +DateTime from
+  +DateTime to
+}
+
+"day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::DayRecommendationsEvent" <|-- "day_planner::features::day_recomendations::bloc::day_recomendations_event.dart::SetRange"
+
+class "day_planner::features::day_recomendations::bloc::day_recomendations_bloc.dart::DayRecommendationsBloc" {
+  -RecommendationsRepository _recommendationsRepository
+  -EventsAnalyzer _analyzer
+  -dynamic _onFetchEventsForRange()
+  -void _onAnalyzeRecommendations()
+  -void _onCreateActivities()
+}
+
+"day_planner::features::day_recomendations::bloc::day_recomendations_bloc.dart::DayRecommendationsBloc" o-- "day_planner::features::day_recomendations::repository::recommendations_repository.dart::RecommendationsRepository"
+"day_planner::features::day_recomendations::bloc::day_recomendations_bloc.dart::DayRecommendationsBloc" o-- "day_planner::features::day_recomendations::services::events_analyzer.dart::EventsAnalyzer"
+"bloc::src::bloc.dart::Bloc" <|-- "day_planner::features::day_recomendations::bloc::day_recomendations_bloc.dart::DayRecommendationsBloc"
+
+class "day_planner::features::day_recomendations::bloc::day_recomendations_state.dart::DayRecommendationsState" {
+  +List<DayEvent> fetchedEvents
+  +Map<String, double> weights
+  +DateTime? day
+  +TimeOfDay from
+  +TimeOfDay to
+  +GenerateEventsStatus generatedEventsStatus
+  +List<Recommendation> recommendations
+  +List<DayEvent> generatedDays
+  +List<Object?> props
+  +DayRecommendationsState copyWith()
+}
+
+"day_planner::features::day_recomendations::bloc::day_recomendations_state.dart::DayRecommendationsState" o-- "flutter::src::material::time.dart::TimeOfDay"
+"day_planner::features::day_recomendations::bloc::day_recomendations_state.dart::DayRecommendationsState" o-- "day_planner::features::day_recomendations::models::generated_events_status.dart::GenerateEventsStatus"
+"equatable::src::equatable.dart::Equatable" <|-- "day_planner::features::day_recomendations::bloc::day_recomendations_state.dart::DayRecommendationsState"
+
+class "day_planner::firebase_options.dart::DefaultFirebaseOptions" {
+  {static} +FirebaseOptions web
+  {static} +FirebaseOptions android
+  {static} +FirebaseOptions ios
+  {static} +FirebaseOptions currentPlatform
+}
+
+"day_planner::firebase_options.dart::DefaultFirebaseOptions" o-- "firebase_core_platform_interface::firebase_core_platform_interface.dart::FirebaseOptions"
+
+class "day_planner::common::router.dart::_TransitionPage" {
+}
+
+"go_router::src::pages::custom_transition_page.dart::CustomTransitionPage" <|-- "day_planner::common::router.dart::_TransitionPage"
+
+class "day_planner::common::utils::app_bloc_observer.dart::AppBlocObserver" {
+  +void onChange()
+  +void onTransition()
+  +void observe()
+}
+
+"bloc::src::bloc_observer.dart::BlocObserver" <|-- "day_planner::common::utils::app_bloc_observer.dart::AppBlocObserver"
+
+class "day_planner::common::utils::app_utils.dart::EnumToString" {
+  +String? parse()
+  +T? fromString()
+}
+
+class "day_planner::common::utils::app_flavor.dart::AppFlavor" {
+  +int index
+  {static} +List<AppFlavor> values
+  {static} +AppFlavor dev
+  {static} +AppFlavor prod
+}
+
+"day_planner::common::utils::app_flavor.dart::AppFlavor" o-- "day_planner::common::utils::app_flavor.dart::AppFlavor"
+"dart::core::Enum" <|-- "day_planner::common::utils::app_flavor.dart::AppFlavor"
+
+class "day_planner::common::screens::error_screen.dart::ErrorScreen" {
+  +Exception? error
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::screens::error_screen.dart::ErrorScreen"
+
+class "day_planner::common::screens::pages_list_screen.dart::PagesListScreen" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::screens::pages_list_screen.dart::PagesListScreen"
+
+class "day_planner::common::screens::open_source_licenses_screen.dart::OpenSourceLicensesScreen" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::screens::open_source_licenses_screen.dart::OpenSourceLicensesScreen"
+
+class "day_planner::common::screens::home_screen.dart::HomeScreen" {
+  +State<HomeScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::common::screens::home_screen.dart::HomeScreen"
+
+class "day_planner::common::screens::home_screen.dart::_HomeScreenState" {
+  +void initState()
+  +Widget build()
+  -void _authListener()
+  -void _healthListener()
+  -void _dayPlannerListener()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::common::screens::home_screen.dart::_HomeScreenState"
+
+class "day_planner::common::screens::splash_screen.dart::SplashScreen" {
+  +State<SplashScreen> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "day_planner::common::screens::splash_screen.dart::SplashScreen"
+
+class "day_planner::common::screens::splash_screen.dart::_SplashScreenState" {
+  +void initState()
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::State" <|-- "day_planner::common::screens::splash_screen.dart::_SplashScreenState"
+
+class "day_planner::common::services::theme_box.dart::ThemeBox" {
+  {static} +String name
+  {static} +String themeModeKey
+  +dynamic initialize()
+}
+
+class "day_planner::common::services::logger.dart::LoggerBootstrapper" {
+  +dynamic setupLogger()
+}
+
+abstract class "day_planner::common::services::secure_cache.dart::SecureStorageMixin" {
+  {static} -String _authTokenKey
+  {static} -String _refreshTokenKey
+  {static} -String _stayLoggedInKey
+  {static} -FlutterSecureStorage _storage
+  -dynamic _read()
+  +dynamic readAll()
+  +dynamic delete()
+  +dynamic deleteAll()
+  -dynamic _write()
+  +dynamic writeAuthToken()
+  +dynamic readAuthToken()
+  +dynamic writeRefreshToken()
+  +dynamic readRefreshToken()
+  +dynamic writeStayLoggedKey()
+  +dynamic deleteStayLoggedKey()
+  +dynamic deleteTokens()
+  +dynamic isStayLogged()
+}
+
+"day_planner::common::services::secure_cache.dart::SecureStorageMixin" o-- "flutter_secure_storage::flutter_secure_storage.dart::FlutterSecureStorage"
+
+class "day_planner::common::widgets::text_field.dart::CommonTextField" {
+  +bool isEditMode
+  +String? initialValue
+  +String? hintText
+  +TextEditingController? controller
+  +String? Function(String?)? validator
+  +Widget build()
+}
+
+"day_planner::common::widgets::text_field.dart::CommonTextField" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"day_planner::common::widgets::text_field.dart::CommonTextField" o-- "null::String Function(String)"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::text_field.dart::CommonTextField"
+
+class "day_planner::common::widgets::flushbar.dart::FlushbarStatus" {
+  +int index
+  {static} +List<FlushbarStatus> values
+  {static} +FlushbarStatus success
+  {static} +FlushbarStatus error
+  {static} +FlushbarStatus common
+}
+
+"day_planner::common::widgets::flushbar.dart::FlushbarStatus" o-- "day_planner::common::widgets::flushbar.dart::FlushbarStatus"
+"dart::core::Enum" <|-- "day_planner::common::widgets::flushbar.dart::FlushbarStatus"
+
+class "day_planner::common::widgets::text_scales.dart::TextScale" {
+  +int index
+  {static} +List<TextScale> values
+  {static} +TextScale displayLarge
+  {static} +TextScale displayMedium
+  {static} +TextScale displaySmall
+  {static} +TextScale headlineLarge
+  {static} +TextScale headlineMedium
+  {static} +TextScale headlineSmall
+  {static} +TextScale titleLarge
+  {static} +TextScale titleMedium
+  {static} +TextScale titleSmall
+  {static} +TextScale bodyLarge
+  {static} +TextScale bodyMedium
+  {static} +TextScale labelLarge
+  {static} +TextScale bodySmall
+  {static} +TextScale labelMedium
+  {static} +TextScale labelSmall
+}
+
+"day_planner::common::widgets::text_scales.dart::TextScale" o-- "day_planner::common::widgets::text_scales.dart::TextScale"
+"dart::core::Enum" <|-- "day_planner::common::widgets::text_scales.dart::TextScale"
+
+class "day_planner::common::widgets::loading_button.dart::LoadingButton" {
+  +void Function()? onPressed
+  +bool isLoading
+  +Widget child
+  +Widget build()
+}
+
+"day_planner::common::widgets::loading_button.dart::LoadingButton" o-- "dart::ui::void Function()"
+"day_planner::common::widgets::loading_button.dart::LoadingButton" o-- "flutter::src::widgets::framework.dart::Widget"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::loading_button.dart::LoadingButton"
+
+class "day_planner::common::widgets::page_widget.dart::PageWidget" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::page_widget.dart::PageWidget"
+
+class "day_planner::common::widgets::repository_holder.dart::RepositoriesHolder" {
+  +Widget child
+  +Widget build()
+}
+
+"day_planner::common::widgets::repository_holder.dart::RepositoriesHolder" o-- "flutter::src::widgets::framework.dart::Widget"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::repository_holder.dart::RepositoriesHolder"
+
+class "day_planner::common::widgets::global_bloc_provider.dart::GlobalBlocProvider" {
+  +Widget child
+  +Widget build()
+}
+
+"day_planner::common::widgets::global_bloc_provider.dart::GlobalBlocProvider" o-- "flutter::src::widgets::framework.dart::Widget"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::global_bloc_provider.dart::GlobalBlocProvider"
+
+class "day_planner::common::widgets::common_app_bar.dart::CommonAppBar" {
+  +Widget? title
+  +List<Widget>? actions
+  +Size preferredSize
+  +Widget build()
+}
+
+"day_planner::common::widgets::common_app_bar.dart::CommonAppBar" o-- "flutter::src::widgets::framework.dart::Widget"
+"day_planner::common::widgets::common_app_bar.dart::CommonAppBar" o-- "dart::ui::Size"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::common_app_bar.dart::CommonAppBar"
+"flutter::src::widgets::preferred_size.dart::PreferredSizeWidget" <|-- "day_planner::common::widgets::common_app_bar.dart::CommonAppBar"
+
+class "day_planner::common::widgets::loading_indicator.dart::LoadingIndicator" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::loading_indicator.dart::LoadingIndicator"
+
+class "day_planner::common::widgets::bottom_nav_bar.dart::CommonBottomNavBar" {
+  +Map<int, TabScreen> routes
+  +Widget build()
+  -int _getIndex()
+  -void _navigateBetweenPages()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "day_planner::common::widgets::bottom_nav_bar.dart::CommonBottomNavBar"
+
+
+@enduml

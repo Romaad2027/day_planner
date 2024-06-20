@@ -34,6 +34,7 @@ const String postsRoute = '/posts';
 const String addEventRoute = '/add-event';
 const String viewEventRoute = '/view-add-event';
 const String recommendRoute = '/recommend';
+const String generatedRoute = '/generated';
 
 const String pagesDynamicRoute = ':id';
 const String firstPageRoute = '/pages/1';
@@ -91,11 +92,13 @@ final goRouter = GoRouter(
       pageBuilder: (context, state) {
         final extra = state.extra != null ? state.extra as Map<String, dynamic> : null;
         final isEditMode = extra?['isEditMode'] ?? false;
+        final isGeneratedMode = extra?['isGeneratedMode'] ?? false;
         final editedEvent = extra?['editedEvent'];
         return _TransitionPage(
           key: state.pageKey,
           child: AddEventScreen(
             isEditMode: isEditMode,
+            isGeneratedMode: isGeneratedMode,
             dayEvent: editedEvent,
           ),
         );
@@ -110,6 +113,13 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: recommendRoute,
+      pageBuilder: (context, state) => _TransitionPage(
+        key: state.pageKey,
+        child: const RecommendationsScreen(),
+      ),
+    ),
+    GoRoute(
+      path: generatedRoute,
       pageBuilder: (context, state) => _TransitionPage(
         key: state.pageKey,
         child: const RecommendationsScreen(),

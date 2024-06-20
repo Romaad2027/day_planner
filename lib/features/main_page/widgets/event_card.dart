@@ -9,10 +9,13 @@ class EventCard extends StatelessWidget {
   final DayEvent event;
   final Color? cardColor;
 
+  final bool isGenerated;
+
   const EventCard({
     super.key,
     required this.event,
     this.cardColor,
+    this.isGenerated = false,
   });
 
   @override
@@ -22,7 +25,20 @@ class EventCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: cardMarginVertical, horizontal: cardMarginHorizontal),
       child: GestureDetector(
-        onTap: () => context.push(viewEventRoute, extra: {'dayEvent': event}),
+        onTap: () {
+          if (isGenerated) {
+            context.push(
+              addEventRoute,
+              extra: {
+                'isEditMode': true,
+                'isGeneratedMode': true,
+                'editedEvent': event,
+              },
+            );
+          } else {
+            context.push(viewEventRoute, extra: {'dayEvent': event});
+          }
+        },
         child: Card(
           color: cardColor ?? colorScheme.primary,
           child: ClipRect(

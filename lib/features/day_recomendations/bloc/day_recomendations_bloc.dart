@@ -13,14 +13,16 @@ class DayRecommendationsBloc extends Bloc<DayRecommendationsEvent, DayRecommenda
     on<FetchEventsForRange>(_onFetchEventsForRange);
     on<AnalyzeRecommendations>(_onAnalyzeRecommendations);
     on<CreateActivities>(_onCreateActivities);
+    on<UpdateEvent>(_onUpdateEvent);
   }
 
   Future<void> _onFetchEventsForRange(FetchEventsForRange event, Emitter<DayRecommendationsState> emit) async {
     try {
+      emit(state.copyWith(recommendationStatus: RecommendationStatus.loading));
       final events = await _recommendationsRepository.rangeHealthData(event.from, event.to);
       final day = getOnlyDate(event.to);
       emit(state.copyWith(fetchedEvents: events, day: day));
-      add(const AnalyzeRecommendations());
+      add(AnalyzeRecommendations(event.thresholds));
     } catch (e, st) {
       print(st);
     }
@@ -37,8 +39,17 @@ class DayRecommendationsBloc extends Bloc<DayRecommendationsEvent, DayRecommenda
     final w = {...state.weights};
 
     final events = [...state.fetchedEvents];
-    final recommendations = _analyzer.recommendActivities(events, weights);
-    emit(state.copyWith(recommendations: recommendations));
+    final recommendations = _analyzer.recommendActivities(events, weights, event.thresholds);
+    if (recommendations.isEmpty) {
+      return emit(state.copyWith(
+        recommendations: recommendations,
+        recommendationStatus: RecommendationStatus.empty,
+      ));
+    }
+    emit(state.copyWith(
+      recommendations: recommendations,
+      recommendationStatus: RecommendationStatus.success,
+    ));
   }
 
   void _onCreateActivities(CreateActivities event, Emitter<DayRecommendationsState> emit) {
@@ -55,5 +66,13 @@ class DayRecommendationsBloc extends Bloc<DayRecommendationsEvent, DayRecommenda
       day: day ?? getOnlyDate(DateTime.now()),
     );
     emit(state.copyWith(generatedDays: dayEvents, generatedEventsStatus: GenerateEventsStatus.generating));
+  }
+
+  void _onUpdateEvent(UpdateEvent event, Emitter<DayRecommendationsState> emit) {
+    final events = [...state.generatedDays];
+    events.removeWhere((e) => e.docId == event.dayEvent.docId);
+
+    events.add(event.dayEvent);
+    emit(state.copyWith(generatedDays: events));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:day_planner/features/profile/models/health_thresholds.dart';
 import 'package:day_planner/features/profile/models/user_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -22,8 +23,10 @@ class FetchUser extends ProfileEvent {
 
 class UpdateUser extends ProfileEvent {
   final String? name;
+  final HealthThresholds? healthThresholds;
 
   const UpdateUser({
     this.name,
+    this.healthThresholds,
   });
 }

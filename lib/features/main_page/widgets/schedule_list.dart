@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:day_planner/common/utils/utils.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_bloc.dart';
+import 'package:day_planner/features/day_planner/bloc/day_planner_event.dart';
 import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
 import 'package:day_planner/features/day_planner/models/add_event.dart';
 import 'package:day_planner/features/day_planner/models/day_event.dart';
@@ -39,10 +40,13 @@ class ScheduleManageEventView extends StatelessWidget {
   final List<DayEvent> dayEvents;
   final DateTime? day;
 
+  final bool isGenerated;
+
   const ScheduleManageEventView({
     required this.dayEvents,
     required this.day,
     this.addNewEvent,
+    this.isGenerated = false,
     super.key,
   });
 
@@ -52,6 +56,7 @@ class ScheduleManageEventView extends StatelessWidget {
       addNewEvent: addNewEvent,
       events: dayEvents,
       day: day,
+      isGenerated: isGenerated,
     );
   }
 }
@@ -64,10 +69,13 @@ class ScheduleView extends StatelessWidget {
 
   final DateTime? day;
 
+  final bool isGenerated;
+
   const ScheduleView({
     required this.events,
     required this.day,
     this.addNewEvent,
+    this.isGenerated = false,
     super.key,
   });
 
@@ -85,7 +93,12 @@ class ScheduleView extends StatelessWidget {
               }),
             ),
           ),
-          ...events.map((event) => PositionedEventCard(event: event)).toList(),
+          ...events
+              .map((event) => PositionedEventCard(
+                    event: event,
+                    isGenerated: isGenerated,
+                  ))
+              .toList(),
           if (day == null || day?.day == DateTime.now().day) const TimeLine(),
           if (addNewEvent != null)
             Positioned(
@@ -98,6 +111,17 @@ class ScheduleView extends StatelessWidget {
                 event: DayEvent.fromAddNewEvent(addNewEvent!),
               ),
             ),
+          if (isGenerated)
+            Positioned(
+              bottom: 0,
+              child: FilledButton(
+                child: Text('Add'),
+                onPressed: () {
+                  final x = 0;
+                  context.read<DayPlannerBloc>().add(AddSeveralActivities(events));
+                },
+              ),
+            )
         ],
       ),
     );
@@ -184,8 +208,13 @@ class _TimeLineState extends State<TimeLine> {
 
 class PositionedEventCard extends StatelessWidget {
   final DayEvent event;
+  final bool isGenerated;
 
-  const PositionedEventCard({super.key, required this.event});
+  const PositionedEventCard({
+    super.key,
+    required this.event,
+    this.isGenerated = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +226,10 @@ class PositionedEventCard extends StatelessWidget {
       left: timeLabelWidth,
       right: 0,
       height: height <= 29 ? 30 : height + 16,
-      child: EventCard(event: event),
+      child: EventCard(
+        event: event,
+        isGenerated: isGenerated,
+      ),
     );
   }
 }

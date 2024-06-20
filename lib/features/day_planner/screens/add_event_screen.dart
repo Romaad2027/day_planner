@@ -10,6 +10,8 @@ import 'package:day_planner/features/day_planner/bloc/day_planner_state.dart';
 import 'package:day_planner/features/day_planner/models/add_event.dart';
 import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/day_planner/widgets/time_range_input.dart';
+import 'package:day_planner/features/day_recomendations/bloc/day_recomendations_bloc.dart';
+import 'package:day_planner/features/day_recomendations/bloc/day_recomendations_event.dart' as dr;
 import 'package:day_planner/features/main_page/widgets/schedule_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,10 +19,12 @@ import 'package:go_router/go_router.dart';
 
 class AddEventScreen extends StatefulWidget {
   final bool isEditMode;
+  final bool isGeneratedMode;
   final DayEvent? dayEvent;
 
   const AddEventScreen({
     this.isEditMode = true,
+    this.isGeneratedMode = false,
     this.dayEvent,
     super.key,
   }) : assert((isEditMode && dayEvent != null) || (!isEditMode && dayEvent == null));
@@ -115,6 +119,10 @@ class _AddEventScreenState extends State<AddEventScreen> {
                           DropdownMenuItem(
                             value: 'Rest',
                             child: Text('Rest'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Walking',
+                            child: Text('Walking'),
                           ),
                           DropdownMenuItem(
                             value: 'Work',
@@ -220,6 +228,10 @@ class _AddEventScreenState extends State<AddEventScreen> {
           to: toDate,
           healthModel: widget.dayEvent?.healthModel,
         );
+        if (widget.isGeneratedMode) {
+          context.read<DayRecommendationsBloc>().add(dr.UpdateEvent(dayEvent));
+          return;
+        }
         context.read<DayPlannerBloc>().add(UpdateEvent(dayEvent));
         return;
       }

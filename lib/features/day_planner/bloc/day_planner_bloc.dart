@@ -27,6 +27,7 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
 
   DayPlannerBloc(this._eventsRepository, this._healthService) : super(const DayPlannerState()) {
     on<AddNewEvent>(_onAddNewEvent);
+    on<AddSeveralActivities>(_onAddSeveralActivities);
     on<UpdateEvent>(_onUpdateEvent);
     on<SetDay>(_onSetDay);
     on<ListenToDay>(_onListenToDay);
@@ -54,10 +55,23 @@ class DayPlannerBloc extends Bloc<DayPlannerEvent, DayPlannerState> {
       final docId = await _eventsRepository.addEvent(addEvent);
       final dayEvent = DayEvent.fromAddNewEvent(addEvent, docId);
       emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.success));
-      add(FetchHealthData(eventsToFetch: [dayEvent]));
     } catch (e) {
       emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.error));
     }
+  }
+
+  Future<void> _onAddSeveralActivities(AddSeveralActivities event, Emitter<DayPlannerState> emit) async {
+    emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.loading));
+    for (final e in event.dayEvents) {
+      final addEvent = AddEventModel(
+        name: e.name,
+        category: e.category,
+        from: e.from,
+        to: e.to,
+      );
+      await _eventsRepository.addEvent(addEvent);
+    }
+    emit(state.copyWith(dayPlannerStatus: DayPlannerStatus.success));
   }
 
   Future<void> _onUpdateEvent(UpdateEvent event, Emitter<DayPlannerState> emit) async {

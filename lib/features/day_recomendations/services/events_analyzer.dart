@@ -2,11 +2,10 @@ import 'package:day_planner/features/day_planner/models/day_event.dart';
 import 'package:day_planner/features/day_recomendations/models/recommendation.dart';
 import 'package:day_planner/features/day_recomendations/models/recommendation_type.dart';
 import 'package:day_planner/features/day_recomendations/models/repeated_time_slot.dart';
-import 'package:day_planner/features/health/models/health_model.dart';
+import 'package:day_planner/features/profile/models/health_thresholds.dart';
 import 'package:flutter/material.dart';
 
 class EventsAnalyzer {
-  // Анализ данных за неделю и определение, каких активностей не хватает
   Map<String, dynamic> analyzeUserActivities(List<DayEvent> events) {
     int totalSteps = 0;
     int totalHeartRate = 0;
@@ -40,18 +39,15 @@ class EventsAnalyzer {
     return max == min ? 0 : (value - min) / (max - min);
   }
 
-  // Нормализация данных
   Map<String, double> normalize(Map<String, dynamic> analysis, Map<String, dynamic> thresholds) {
     return {
       'steps': normalizeValue(analysis['totalSteps'], 0, thresholds['steps']!),
       'heartRate': normalizeValue(analysis['averageHeartRate'], 0, thresholds['heartRate']!),
       'kcal': normalizeValue(analysis['totalKcal'], 0, thresholds['kcal']!),
       'sport': normalizeValue(analysis['categoryCount']['sport'] ?? 0, 0, thresholds['sport']!),
-      // Добавьте другие категории по мере необходимости
     };
   }
 
-  // Агрегация оценок
   double aggregateScores(Map<String, double> normalizedValues, Map<String, double> weights) {
     double score = 0.0;
     normalizedValues.forEach((key, value) {
@@ -60,16 +56,15 @@ class EventsAnalyzer {
     return score;
   }
 
-  List<Recommendation> recommendActivities(List<DayEvent> events, Map<String, double> weights) {
+  List<Recommendation> recommendActivities(
+      List<DayEvent> events, Map<String, double> weights, HealthThresholds healthThresholds) {
     Map<String, dynamic> analysis = analyzeUserActivities(events);
 
-    // Пример пороговых значений для нормализации
     Map<String, dynamic> thresholds = {
-      'steps': 65000, // Пороговое значение для общего количества шагов за неделю
-      'kcal': 19000.0,
-      'heartRate': 80,
+      'steps': healthThresholds.steps,
+      'kcal': healthThresholds.kcal,
+      'heartRate': healthThresholds.heartRate,
       'sport': 5,
-      // Добавьте другие категории по мере необходимости
     };
 
     Map<String, double> normalizedValues = normalize(analysis, thresholds);
@@ -77,10 +72,8 @@ class EventsAnalyzer {
 
     List<Recommendation> recommendations = [];
 
-    // Определение порога для общего показателя
     double overallThreshold = 0.7;
 
-    // Обязательные рекомендации
     if (score < overallThreshold) {
       if (normalizedValues['steps']! < 0.7) {
         final rec = Recommendation(
@@ -148,91 +141,97 @@ class EventsAnalyzer {
     TimeOfDay currentTime = recommendationStart;
 
     bool intenseSportAdded = false;
-    while (currentTime.hour < recommendationEnd.hour) {
-      final checkDate = DateTime(
-        day.year,
-        day.month,
-        day.day,
-        currentTime.hour,
-        currentTime.minute,
-      );
-      bool isOccupied =
-          occupiedTimeRanges.any((range) => checkDate.isAfter(range.start) && checkDate.isBefore(range.end));
+    // while (currentTime.hour < recommendationEnd.hour) {
+    final checkDate = DateTime(
+      day.year,
+      day.month,
+      day.day,
+      currentTime.hour,
+      currentTime.minute,
+    );
+    bool isOccupied =
+        occupiedTimeRanges.any((range) => checkDate.isAfter(range.start) && checkDate.isBefore(range.end));
 
-      if (!isOccupied) {
-        for (var rec in recommendations) {
-          final fullDate = DateTime(
-            day.year,
-            day.month,
-            day.day,
-            currentTime.hour,
-            currentTime.minute,
-          );
-          String category = _getCategoryFromRecommendationType(rec.recommendationType);
+    if (!isOccupied) {
+      int counter = 0;
+      int idCounter = 0;
+      for (var rec in recommendations) {
+        final fullDate = DateTime(
+          day.year,
+          day.month,
+          day.day + 1,
+          currentTime.hour,
+          currentTime.minute,
+        );
+        String category = _getCategoryFromRecommendationType(rec.recommendationType);
 
-          // Избегаем повторяющиеся временные промежутки
-          if ((repeatedTimeSlots[currentTime.hour]?.length ?? 0) > 5) {
-            if (repeatedTimeSlots[currentTime.hour]!.any((e) => e.count > 5)) {
-              continue;
-            }
-          }
-
-          double intensity = (0.7 - rec.value).clamp(0.0, 1.0);
-
-          if (intensity > 0) {
-            String name;
-            Duration duration;
-            Duration restDuration;
-
-            if (intensity > 0.6 && !intenseSportAdded) {
-              name = 'Intense $category Activity';
-              duration = Duration(hours: 1);
-              restDuration = Duration(hours: 1);
-              intenseSportAdded = true;
-            } else if (intensity > 0.3) {
-              name = 'Moderate $category Activity';
-              duration = Duration(hours: 1);
-              restDuration = Duration(minutes: 30);
-            } else {
-              name = 'Light $category Activity';
-              duration = Duration(hours: 1);
-              restDuration = Duration(minutes: 30);
-            }
-
-            newEvents.add(DayEvent(
-              name: name,
-              category: category,
-              from: fullDate,
-              to: fullDate.add(duration),
-              healthModel: null,
-              docId: '',
-            ));
-
-            occupiedTimeRanges.add(DateTimeRange(start: fullDate, end: fullDate.add(duration)));
-
-            // Добавить отдых после активности
-            DateTime restStartTime = fullDate.add(duration);
-            newEvents.add(DayEvent(
-              name: 'Rest',
-              category: 'rest',
-              from: restStartTime,
-              to: restStartTime.add(restDuration),
-              healthModel: null,
-              docId: '',
-            ));
-
-            occupiedTimeRanges.add(DateTimeRange(start: restStartTime, end: restStartTime.add(restDuration)));
-            final time = restStartTime.add(restDuration);
-            currentTime = TimeOfDay(
-              hour: currentTime.hour + time.hour,
-              minute: currentTime.minute + time.minute,
-            );
+        if ((repeatedTimeSlots[currentTime.hour]?.length ?? 0) > 5) {
+          if (repeatedTimeSlots[currentTime.hour]!.any((e) => e.count > 5)) {
+            continue;
           }
         }
-      }
 
-      currentTime = TimeOfDay(hour: currentTime.hour + 1, minute: currentTime.minute);
+        double intensity = (0.7 - rec.value).clamp(0.0, 1.0);
+
+        if (intensity > 0) {
+          String name;
+          Duration duration;
+          Duration restDuration;
+
+          if (intensity > 0.6 && !intenseSportAdded) {
+            name = 'Intense $category Activity';
+            duration = Duration(hours: 1);
+            restDuration = Duration(hours: 1);
+            intenseSportAdded = true;
+          } else if (intensity > 0.3) {
+            name = 'Moderate $category Activity';
+            duration = Duration(hours: 1);
+            restDuration = Duration(minutes: 30);
+          } else {
+            name = 'Light $category Activity';
+            duration = Duration(hours: 1);
+            restDuration = Duration(minutes: 30);
+          }
+
+          newEvents.add(DayEvent(
+            name: name,
+            category: category,
+            from: fullDate,
+            to: fullDate.add(duration),
+            healthModel: null,
+            docId: idCounter.toString(),
+          ));
+          idCounter++;
+
+          occupiedTimeRanges.add(DateTimeRange(start: fullDate, end: fullDate.add(duration)));
+
+          DateTime restStartTime = fullDate.add(duration);
+          newEvents.add(DayEvent(
+            name: 'Rest',
+            category: 'rest',
+            from: restStartTime,
+            to: restStartTime.add(restDuration),
+            healthModel: null,
+            docId: idCounter.toString(),
+          ));
+          idCounter++;
+
+          occupiedTimeRanges.add(DateTimeRange(start: restStartTime, end: restStartTime.add(restDuration)));
+          final time = restStartTime.add(restDuration);
+          currentTime = TimeOfDay(
+            hour: time.hour,
+            minute: time.minute,
+          );
+          if (counter == 3) {
+            break;
+          }
+          counter++;
+        }
+      }
     }
+
+    //currentTime = TimeOfDay(hour: currentTime.hour + 1, minute: currentTime.minute);
+    //}
 
     return newEvents;
   }
@@ -240,72 +239,72 @@ class EventsAnalyzer {
   String _getCategoryFromRecommendationType(RecommendationType type) {
     switch (type) {
       case RecommendationType.steps:
-        return 'walking';
+        return 'Walking';
       case RecommendationType.kcal:
-        return 'sport';
+        return 'Sport';
       case RecommendationType.sportActivity:
-        return 'sport';
+        return 'Sport';
       default:
-        return 'unknown';
+        return 'Other';
     }
   }
 }
 
-void main() {
-  List<DayEvent> events = [
-    DayEvent(
-      name: 'Football',
-      category: 'sport',
-      from: DateTime.now().subtract(const Duration(days: 2)),
-      to: DateTime.now().subtract(const Duration(days: 2, hours: -1)),
-      healthModel: const HealthModel(totalSteps: 5000, averageHeartRate: 120),
-      docId: '',
-    ),
-    DayEvent(
-      name: 'Meeting',
-      category: 'work',
-      from: DateTime.now().subtract(const Duration(days: 1)),
-      to: DateTime.now().subtract(const Duration(days: 1, hours: -1)),
-      healthModel: const HealthModel(totalSteps: 200, averageHeartRate: 80),
-      docId: '',
-    ),
-    DayEvent(
-      name: 'Writing diploma',
-      category: 'study',
-      from: DateTime.now().subtract(const Duration(days: 3)),
-      to: DateTime.now().subtract(const Duration(days: 3, hours: -1)),
-      healthModel: const HealthModel(totalSteps: 50, averageHeartRate: 70),
-      docId: '',
-    ),
-    DayEvent(
-      name: 'Reading',
-      category: 'rest',
-      from: DateTime.now().subtract(const Duration(days: 4)),
-      to: DateTime.now().subtract(const Duration(days: 4, hours: -1)),
-      healthModel: const HealthModel(totalSteps: 35, averageHeartRate: 68),
-      docId: '',
-    ),
-    DayEvent(
-      name: 'Fishing',
-      category: 'rest',
-      from: DateTime.now().subtract(const Duration(days: 5)),
-      to: DateTime.now().subtract(const Duration(days: 5, hours: -2)),
-      healthModel: const HealthModel(totalSteps: 30, averageHeartRate: 68),
-      docId: '',
-    ),
-  ];
-
-  Map<String, double> weights = {
-    'steps': 0.3,
-    'kcal': 0.3,
-    'heartRate': 0.2,
-    'sport': 0.2,
-  };
-
-  EventsAnalyzer recommendationSystem = EventsAnalyzer();
-  List<Recommendation> recommendations = recommendationSystem.recommendActivities(events, weights);
-
-  for (var recommendation in recommendations) {
-    print(recommendation);
-  }
-}
+// void main() {
+//   List<DayEvent> events = [
+//     DayEvent(
+//       name: 'Football',
+//       category: 'sport',
+//       from: DateTime.now().subtract(const Duration(days: 2)),
+//       to: DateTime.now().subtract(const Duration(days: 2, hours: -1)),
+//       healthModel: const HealthModel(totalSteps: 5000, averageHeartRate: 120),
+//       docId: '',
+//     ),
+//     DayEvent(
+//       name: 'Meeting',
+//       category: 'work',
+//       from: DateTime.now().subtract(const Duration(days: 1)),
+//       to: DateTime.now().subtract(const Duration(days: 1, hours: -1)),
+//       healthModel: const HealthModel(totalSteps: 200, averageHeartRate: 80),
+//       docId: '',
+//     ),
+//     DayEvent(
+//       name: 'Writing diploma',
+//       category: 'study',
+//       from: DateTime.now().subtract(const Duration(days: 3)),
+//       to: DateTime.now().subtract(const Duration(days: 3, hours: -1)),
+//       healthModel: const HealthModel(totalSteps: 50, averageHeartRate: 70),
+//       docId: '',
+//     ),
+//     DayEvent(
+//       name: 'Reading',
+//       category: 'rest',
+//       from: DateTime.now().subtract(const Duration(days: 4)),
+//       to: DateTime.now().subtract(const Duration(days: 4, hours: -1)),
+//       healthModel: const HealthModel(totalSteps: 35, averageHeartRate: 68),
+//       docId: '',
+//     ),
+//     DayEvent(
+//       name: 'Fishing',
+//       category: 'rest',
+//       from: DateTime.now().subtract(const Duration(days: 5)),
+//       to: DateTime.now().subtract(const Duration(days: 5, hours: -2)),
+//       healthModel: const HealthModel(totalSteps: 30, averageHeartRate: 68),
+//       docId: '',
+//     ),
+//   ];
+//
+//   Map<String, double> weights = {
+//     'steps': 0.3,
+//     'kcal': 0.3,
+//     'heartRate': 0.2,
+//     'sport': 0.2,
+//   };
+//
+//   EventsAnalyzer recommendationSystem = EventsAnalyzer();
+//   List<Recommendation> recommendations = recommendationSystem.recommendActivities(events, weights);
+//
+//   for (var recommendation in recommendations) {
+//     print(recommendation);
+//   }
+// }

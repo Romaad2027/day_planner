@@ -5,6 +5,7 @@ import 'package:day_planner/features/auth/bloc/auth_bloc.dart';
 import 'package:day_planner/features/profile/bloc/profile_bloc.dart';
 import 'package:day_planner/features/profile/bloc/profile_event.dart';
 import 'package:day_planner/features/profile/bloc/profile_state.dart';
+import 'package:day_planner/features/profile/models/health_thresholds.dart';
 import 'package:day_planner/features/theme/bloc/theme_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,6 +19,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _stepsController = TextEditingController();
+  final TextEditingController _heartRateController = TextEditingController();
+  final TextEditingController _kcalController = TextEditingController();
 
   bool _isEditMode = false;
 
@@ -44,6 +48,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         builder: (context, state) {
           final userProfile = state.userProfile;
           _nameController.text = userProfile!.name;
+          _stepsController.text = userProfile.healthThresholds.steps.toString();
+          _heartRateController.text = userProfile.healthThresholds.heartRate.toString();
+          _kcalController.text = userProfile.healthThresholds.kcal.toString();
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Column(
@@ -79,6 +86,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   hintText: 'Phone Number',
                   isEditMode: false,
                 ),
+                const SizedBox(height: 32),
+                CommonTextField(
+                  controller: _stepsController,
+                  hintText: 'Steps threshold',
+                  isEditMode: _isEditMode,
+                ),
+                const SizedBox(height: 16),
+                CommonTextField(
+                  controller: _heartRateController,
+                  hintText: 'Heart rate threshold',
+                  isEditMode: _isEditMode,
+                ),
+                const SizedBox(height: 16),
+                CommonTextField(
+                  controller: _kcalController,
+                  hintText: 'Active kcal threshold',
+                  isEditMode: _isEditMode,
+                ),
                 const SizedBox(height: 64),
                 if (_isEditMode)
                   Center(
@@ -88,7 +113,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onPressed: state.profileStatus.isLoading
                             ? null
                             : () {
-                                context.read<ProfileBloc>().add(UpdateUser(name: _nameController.text));
+                                final healthThreshold = HealthThresholds(
+                                  steps: int.parse(_stepsController.text),
+                                  kcal: double.parse(_kcalController.text),
+                                  heartRate: int.parse(
+                                    _heartRateController.text,
+                                  ),
+                                );
+                                context.read<ProfileBloc>().add(UpdateUser(
+                                      name: _nameController.text,
+                                      healthThresholds: healthThreshold,
+                                    ));
                               },
                         child: state.profileStatus.isLoading
                             ? const CircularProgressIndicator.adaptive()

@@ -41,6 +41,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       emit(state.copyWith(profileStatus: ProfileStatus.loading));
       final data = {
         'name': event.name,
+        'health_thresholds': event.healthThresholds?.toJson(),
       };
       await _profileRepository.updateUser(uid, data);
       emit(state.copyWith(profileStatus: ProfileStatus.success));
